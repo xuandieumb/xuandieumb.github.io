@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="ThanhDiem Hub" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="ThanhDiem Hub — Multi-platform tools." />
+<title>ThanhDiem Hub</title>
+<link rel="icon" type="image/jpeg" href="thanhdiem.jpg" />
+<link rel="apple-touch-icon" href="thanhdiem.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+@media (hover: hover) and (pointer: fine) {
+  html, body { cursor: url("Normal.cur"), auto; }
+  a, button, .tool-item, .apk-item, .shortcut-item, .platform-tab, [role="button"] { cursor: url("Link.cur"), pointer; }
+  body.loading, body.loading * { cursor: url("Busy.ani"), wait !important; }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #000000;
+  --bg-2: #0a0d0a;
+  --surface: rgba(0, 255, 100, 0.025);
+  --surface-hi: rgba(0, 255, 100, 0.05);
+  --border: rgba(0, 255, 100, 0.09);
+  --border-hi: rgba(0, 255, 100, 0.2);
+  --text: #d8ffd8;
+  --text-mid: #6b9b6b;
+  --text-dim: #3a553a;
+  --accent: #00ff66;
+  --accent-2: #00d9ff;
+  --accent-soft: rgba(0, 255, 100, 0.12);
+  --danger: #ff3355;
+  --success: #00ff66;
+  --warning: #ffaa00;
+  --purple: #b366ff;
+  --radius: 10px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+html, body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+body { overflow-x: hidden; position: relative; }
+
+/* MATRIX RAIN CANVAS */
+#matrixCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.14;
+}
+
+/* SCANLINES */
+.scanlines {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+}
+
+/* VIGNETTE */
+.vignette {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 100%);
+}
+
+.noise {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* WELCOME MODAL */
+.welcome-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.4s var(--ease);
+  transition: opacity 0.5s var(--ease), visibility 0.5s var(--ease);
+}
+.welcome-overlay.hide {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.welcome-box {
+  max-width: 520px; width: 100%;
+  background: rgba(10, 15, 10, 0.96);
+  border: 1px solid var(--border-hi);
+  border-radius: 14px;
+  padding: 32px 28px;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 100, 0.08) inset,
+    0 0 60px rgba(0, 255, 100, 0.15),
+    0 30px 80px rgba(0, 0, 0, 0.9);
+  animation: welcomeIn 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+.welcome-box::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanLine 3s linear infinite;
+}
+@keyframes scanLine {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes welcomeIn {
+  0%   { opacity: 0; transform: scale(0.92) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+.welcome-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.welcome-header::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.3); }
+}
+.welcome-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.03em;
+  font-family: var(--font-sans);
+}
+.welcome-text {
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--text-mid);
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+}
+.welcome-text b { color: var(--text); }
+.welcome-text .prompt {
+  color: var(--accent);
+  margin-right: 6px;
+}
+.welcome-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.btn-welcome {
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  border: none;
+  text-transform: uppercase;
+}
+.btn-welcome.agree {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #000;
+  box-shadow: 0 8px 24px rgba(0, 255, 100, 0.3);
+}
+.btn-welcome.agree:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 255, 100, 0.5);
+}
+.btn-welcome.agree:active { transform: translateY(0); }
+
+/* SPLASH */
+.splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.7s var(--ease), visibility 0.7s var(--ease);
+}
+.splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+  animation: splashIn 1s var(--ease-out);
+}
+@keyframes splashIn {
+  0%   { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.splash-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent);
+  text-transform: uppercase;
+}
+.splash-text::after {
+  content: "_";
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.splash-bar {
+  width: 200px; height: 2px;
+  background: rgba(0, 255, 100, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.splash-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px var(--accent);
+  animation: splashFill 1.4s var(--ease) forwards;
+}
+@keyframes splashFill {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+.splash-sub {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.wrap {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  padding: 56px 24px 48px; position: relative; z-index: 2;
+  max-width: 100%;
+}
+
+.brand {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-bottom: 32px;
+  opacity: 0; animation: fadeDown 0.9s 0.1s var(--ease-out) forwards;
+}
+.brand-name {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--text) 20%, var(--accent) 80%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+.brand-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+.disclaimer {
+  width: 100%; max-width: 860px;
+  margin-bottom: 22px;
+  padding: 14px 18px;
+  background: rgba(255, 170, 0, 0.04);
+  border: 1px solid rgba(255, 170, 0, 0.2);
+  border-left: 3px solid rgba(255, 170, 0, 0.5);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 12px;
+  color: #ffbb33;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.15s var(--ease-out) forwards;
+}
+.disclaimer svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+.disclaimer b { color: #fff; }
+
+.window {
+  width: 100%; max-width: 860px;
+  background: rgba(6, 10, 6, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 100, 0.04) inset,
+    0 0 40px rgba(0, 255, 100, 0.06),
+    0 30px 80px rgba(0, 0, 0, 0.85);
+  opacity: 0; animation: fadeUp 0.9s 0.2s var(--ease-out) forwards;
+  overflow: hidden;
+  position: relative;
+}
+.window::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.6;
+}
+.window-bar {
+  display: flex; align-items: center;
+  height: 38px; padding: 0 14px;
+  background: rgba(0, 8, 0, 0.85);
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  font-family: var(--font-mono);
+}
+.traffic-lights { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+.traffic {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: none; padding: 0; cursor: pointer;
+  transition: filter 0.2s var(--ease);
+  position: relative;
+}
+.traffic.close { background: #ff3355; box-shadow: 0 0 8px rgba(255,51,85,0.5); }
+.traffic.min   { background: #ffaa00; box-shadow: 0 0 8px rgba(255,170,0,0.5); }
+.traffic.zoom  { background: #00ff66; box-shadow: 0 0 8px rgba(0,255,102,0.5); }
+.traffic:hover { filter: brightness(1.3); }
+.traffic::before {
+  content: ""; position: absolute; inset: 0;
+  opacity: 0; display: grid; place-items: center;
+  font-size: 7px; font-weight: 800; color: rgba(0,0,0,0.7);
+  transition: opacity 0.15s var(--ease);
+}
+.traffic-lights:hover .traffic::before { opacity: 1; }
+.traffic.close::before { content: "×"; }
+.traffic.min::before   { content: "−"; }
+.traffic.zoom::before  { content: "+"; }
+.window-title {
+  flex: 1; text-align: center;
+  font-size: 11px; font-weight: 500;
+  color: var(--text-mid);
+  pointer-events: none; user-select: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 0 8px;
+  letter-spacing: 0.05em;
+}
+.window-title::before { content: "> "; color: var(--accent); }
+.window-right {
+  display: flex; gap: 6px; align-items: center;
+  min-width: 90px; justify-content: flex-end;
+}
+.btn-window-action {
+  width: 24px; height: 24px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 0.2s var(--ease);
+}
+.btn-window-action:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 12px var(--accent-soft);
+}
+.btn-window-action svg { width: 11px; height: 11px; }
+
+.window-body {
+  padding: 36px 36px 32px;
+  transition: max-height 0.5s var(--ease), padding 0.5s var(--ease), opacity 0.3s var(--ease);
+  max-height: 12000px;
+  overflow: hidden;
+}
+.window.minimized .window-body {
+  max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0;
+}
+.window.maxed {
+  max-width: 96vw !important;
+  width: 96vw;
+}
+
+.window-head { margin-bottom: 24px; text-align: center; }
+.window-head h1 {
+  font-size: 26px; font-weight: 800; letter-spacing: -0.04em;
+  margin-bottom: 8px; line-height: 1.1;
+  color: var(--text);
+}
+.window-head p { color: var(--text-mid); font-size: 12.5px; line-height: 1.55; font-family: var(--font-mono); }
+
+.menu-launcher {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.launch-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  padding: 18px 16px;
+  background: rgba(0, 255, 100, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer; font-family: inherit; color: inherit;
+  text-align: left;
+  transition: all 0.25s var(--ease);
+  position: relative; overflow: hidden;
+  min-height: 130px;
+}
+.launch-btn::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--btn-accent, var(--accent)) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+.launch-btn:hover {
+  background: rgba(0, 255, 100, 0.05);
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 255, 100, 0.1);
+}
+.launch-btn:hover::before { opacity: 0.1; }
+.launch-btn > * { position: relative; z-index: 1; }
+.launch-btn.iphone { --btn-accent: #00d9ff; }
+.launch-btn.android { --btn-accent: #00ff66; }
+.launch-btn.windows { --btn-accent: #b366ff; }
+.launch-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-hi);
+  transition: all 0.25s var(--ease);
+}
+.launch-btn.iphone .launch-icon { color: #00d9ff; box-shadow: 0 0 20px rgba(0, 217, 255, 0.2); }
+.launch-btn.android .launch-icon { color: #00ff66; box-shadow: 0 0 20px rgba(0, 255, 102, 0.2); }
+.launch-btn.windows .launch-icon { color: #b366ff; box-shadow: 0 0 20px rgba(179, 102, 255, 0.2); }
+.launch-btn:hover .launch-icon {
+  transform: scale(1.05);
+}
+.launch-icon svg { width: 22px; height: 22px; }
+.launch-title {
+  font-size: 14.5px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.01em; margin-bottom: 4px;
+  line-height: 1.2;
+}
+.launch-desc {
+  font-size: 11px; color: var(--text-mid);
+  line-height: 1.4;
+  font-family: var(--font-mono);
+}
+
+.details-section {
+  padding: 36px 36px 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid var(--border);
+  opacity: 0; animation: fadeUp 0.9s 0.4s var(--ease-out) forwards;
+}
+
+.platform-tabs {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 24px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--font-mono);
+}
+.platform-tab {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.platform-tab:hover { color: var(--text-mid); }
+.platform-tab.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-soft), inset 0 0 0 1px var(--border-hi);
+  text-shadow: 0 0 8px var(--accent);
+}
+.platform-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.3s var(--ease); }
+
+.detail-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+.detail-title svg { width: 17px; height: 17px; color: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+.detail-sub {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+}
+
+.info-block {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: rgba(0, 255, 100, 0.02);
+  border: 1px solid var(--border);
+  border-left: 3px solid rgba(0, 255, 100, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+}
+.info-block b { color: var(--text); font-weight: 600; }
+.info-block code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(0, 255, 100, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--accent);
+}
+.info-block ul { margin: 8px 0 0 18px; padding: 0; }
+.info-block li { margin-bottom: 4px; }
+.info-block.warning {
+  background: rgba(255, 170, 0, 0.03);
+  border-color: rgba(255, 170, 0, 0.15);
+  border-left-color: rgba(255, 170, 0, 0.5);
+}
+.info-block.warning b { color: #ffbb33; }
+.info-block.danger {
+  background: rgba(255, 51, 85, 0.03);
+  border-color: rgba(255, 51, 85, 0.15);
+  border-left-color: rgba(255, 51, 85, 0.5);
+}
+.info-block.danger b { color: #ff5577; }
+
+.section-sub {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+}
+.section-sub::before {
+  content: "//";
+  color: var(--accent);
+  opacity: 0.6;
+}
+.section-sub::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-hi), transparent);
+}
+.section-sub.rare {
+  margin-top: 32px;
+  opacity: 0.65;
+}
+
+/* TOOL LIST */
+.tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tool-item {
+  display: flex; align-items: center; gap: 13px;
+  padding: 12px 14px;
+  background: rgba(0, 255, 100, 0.015);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  text-decoration: none; color: inherit;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+.tool-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+  box-shadow: 0 0 12px var(--accent);
+}
+.tool-item:hover {
+  background: rgba(0, 255, 100, 0.05);
+  border-color: var(--border-hi);
+  transform: translateX(3px);
+  box-shadow: 0 0 24px rgba(0, 255, 100, 0.08);
+}
+.tool-item:hover::before { opacity: 1; }
+.tool-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  transition: all 0.25s var(--ease);
+  position: relative;
+}
+.tool-icon svg { width: 18px; height: 18px; position: relative; z-index: 1; }
+.tool-item:hover .tool-icon {
+  color: var(--accent-2);
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(0, 255, 100, 0.3);
+  transform: scale(1.05);
+}
+.tool-icon.blue   { color: #00d9ff; }
+.tool-icon.green  { color: #00ff66; }
+.tool-icon.purple { color: #b366ff; }
+.tool-icon.orange { color: #ffaa00; }
+.tool-icon.red    { color: #ff3355; }
+.tool-icon.cyan   { color: #00d9ff; }
+.tool-icon.pink   { color: #ff66aa; }
+.tool-icon.indigo { color: #8080ff; }
+.tool-icon.gray   { color: #888888; }
+.tool-icon.teal   { color: #00cc99; }
+.tool-icon.yellow { color: #ffcc00; }
+.tool-icon.sky    { color: #33bbff; }
+.tool-icon.neon   { color: #00ff66; }
+
+.tool-info { flex: 1; min-width: 0; }
+.tool-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text); margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+.tool-desc {
+  font-size: 11px; color: var(--text-mid);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--font-mono);
+}
+.tool-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid;
+}
+.tool-badge.win   { color: #b366ff; border-color: rgba(179, 102, 255, 0.4); }
+.tool-badge.ios   { color: #00d9ff; border-color: rgba(0, 217, 255, 0.4); }
+.tool-badge.droid { color: #00ff66; border-color: rgba(0, 255, 102, 0.4); }
+.tool-badge.web   { color: #00d9ff; border-color: rgba(0, 217, 255, 0.4); }
+.tool-badge.vpn   { color: #ffaa00; border-color: rgba(255, 170, 0, 0.4); }
+.tool-badge.driver{ color: #00cc99; border-color: rgba(0, 204, 153, 0.4); }
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 6px;
+}
+.shortcut-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px;
+  background: rgba(0, 255, 100, 0.015);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none; color: inherit;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.shortcut-item:hover {
+  background: rgba(0, 255, 100, 0.05);
+  border-color: var(--border-hi);
+  transform: translateX(3px);
+}
+.shortcut-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 100, 0.3);
+  display: grid; place-items: center;
+  color: var(--accent); flex-shrink: 0;
+}
+.shortcut-icon svg { width: 14px; height: 14px; }
+.shortcut-info { flex: 1; min-width: 0; }
+.shortcut-name {
+  font-size: 12px; font-weight: 600;
+  color: var(--text); margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.shortcut-desc {
+  font-size: 10px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--font-mono);
+}
+.shortcut-badge {
+  font-family: var(--font-mono);
+  font-size: 8.5px; font-weight: 700;
+  color: var(--accent);
+  background: rgba(0, 255, 100, 0.08);
+  border: 1px solid rgba(0, 255, 100, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.apk-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 5px;
+}
+.apk-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 11px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  transition: all 0.2s var(--ease);
+  font-size: 11.5px;
+  cursor: not-allowed;
+}
+.apk-item:hover {
+  background: rgba(255, 170, 0, 0.05);
+  border-color: rgba(255, 170, 0, 0.3);
+}
+.apk-name {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-mid);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.apk-item:hover .apk-name { color: #ffbb33; }
+.apk-icon {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  background: rgba(255, 170, 0, 0.1);
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  display: grid; place-items: center;
+  color: #ffaa00;
+  flex-shrink: 0;
+}
+.apk-icon svg { width: 10px; height: 10px; }
+.apk-icon.xml {
+  background: rgba(0, 217, 255, 0.1);
+  border-color: rgba(0, 217, 255, 0.3);
+  color: #00d9ff;
+}
+.apk-icon.exe {
+  background: rgba(179, 102, 255, 0.1);
+  border-color: rgba(179, 102, 255, 0.3);
+  color: #b366ff;
+}
+.apk-note {
+  font-size: 9.5px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.policy-section {
+  padding: 36px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid var(--border);
+}
+.policy-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.policy-title svg { width: 18px; height: 18px; color: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+.policy-sub {
+  font-size: 11.5px;
+  color: var(--text-mid);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+}
+.policy-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.policy-block {
+  padding: 16px 18px;
+  background: rgba(0, 255, 100, 0.015);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-hi);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+}
+.policy-block h3 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.policy-block h3 svg { width: 14px; height: 14px; color: var(--accent); }
+.policy-block b { color: var(--text); font-weight: 600; }
+.policy-block ul { margin: 8px 0 0 18px; padding: 0; }
+.policy-block li { margin-bottom: 3px; }
+
+.credit {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: rgba(0, 255, 100, 0.015);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.55;
+  font-family: var(--font-mono);
+}
+.credit b { color: var(--text); font-weight: 600; }
+
+.footer {
+  margin-top: 36px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px;
+  font-size: 12px; color: var(--text-dim);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.5s var(--ease-out) forwards;
+  font-family: var(--font-mono);
+}
+.footer-links {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+.footer-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 15px;
+  color: var(--text-mid);
+  background: rgba(0, 255, 100, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 11.5px; font-weight: 500;
+  transition: all 0.3s var(--ease);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.footer-link:hover {
+  color: var(--accent); border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px var(--accent-soft);
+}
+.footer-link svg { width: 13px; height: 13px; flex-shrink: 0; }
+.footer-credit {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 720px) {
+  .menu-launcher { grid-template-columns: 1fr; }
+  .shortcut-grid { grid-template-columns: 1fr; }
+  .apk-list { grid-template-columns: 1fr; }
+  .launch-btn { min-height: auto; flex-direction: row; align-items: center; gap: 14px; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 24px 14px; }
+  .window-body { padding: 22px 16px 20px; }
+  .details-section { padding: 22px 16px 26px; }
+  .policy-section { padding: 22px 16px 26px; }
+  .window-head h1 { font-size: 20px; }
+  .brand-name { font-size: 22px; }
+  .brand-tag { font-size: 9.5px; }
+  .window-bar { padding: 0 10px; height: 40px; }
+  .traffic { width: 12px; height: 12px; }
+  .traffic-lights { gap: 7px; }
+  .btn-window-action { width: 26px; height: 26px; }
+  .window-right { min-width: 64px; }
+  .platform-tab { font-size: 10.5px; padding: 9px 6px; }
+  .platform-tab svg { width: 12px; height: 12px; }
+  .welcome-box { padding: 24px 20px; }
+  .welcome-title { font-size: 17px; }
+  .welcome-text { font-size: 11.5px; }
+  .welcome-actions { flex-direction: column-reverse; }
+  .btn-welcome { width: 100%; }
+  .splash-text { font-size: 12px; }
+}
+</style>
+</head>
+<body data-mode="iphone">
+
+<canvas id="matrixCanvas"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<!-- WELCOME MODAL -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-box">
+    <div class="welcome-header">system.init</div>
+    <div class="welcome-title">Chào mừng tới ThanhDiem Hub</div>
+    <div class="welcome-text">
+      <p><span class="prompt">$</span>Kho công cụ đa nền tảng: <b>iPhone</b>, <b>Android</b>, <b>Windows</b>.</p>
+      <p><span class="prompt">$</span>Các công cụ cung cấp cho mục đích nghiên cứu và khôi phục thiết bị bạn
+      <b>sở hữu hợp pháp</b>. Không dùng cho mục đích xấu. Người dùng tự chịu trách nhiệm.</p>
+      <p><span class="prompt">$</span>Bấm <b>Đồng ý</b> để tiếp tục.</p>
+    </div>
+    <div class="welcome-actions">
+      <button class="btn-welcome agree" id="btnWelcomeAgree">Đồng ý</button>
+    </div>
+  </div>
+</div>
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-inner">
+    <div class="splash-text">ThanhDiem Hub</div>
+    <div class="splash-bar">
+      <div class="splash-bar-fill"></div>
+    </div>
+    <div class="splash-sub">initializing modules...</div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <header class="brand">
+    <div class="brand-name">ThanhDiem Hub</div>
+    <div class="brand-tag">// iPhone · Android · Windows</div>
+  </header>
+
+  <div class="disclaimer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <div>
+      <b>Tuyên bố miễn trừ trách nhiệm.</b> Trang tổng hợp công cụ cho mục đích nghiên cứu và khôi phục
+      thiết bị bạn sở hữu hợp pháp. Chúng tôi không chịu trách nhiệm cho bất kỳ hành vi lạm dụng nào.
+    </div>
+  </div>
+
+  <div class="window" id="mainWindow">
+    <div class="window-bar">
+      <div class="traffic-lights">
+        <button class="traffic close" id="btnWinClose" title="Đóng"></button>
+        <button class="traffic min" id="btnWinMin" title="Thu nhỏ"></button>
+        <button class="traffic zoom" id="btnWinZoom" title="Mở rộng"></button>
+      </div>
+      <div class="window-title">thanhdiem@hub:~/tools</div>
+      <div class="window-right">
+        <button class="btn-window-action reload" id="btnWinReload" title="Khởi động lại">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+        </button>
+        <button class="btn-window-action" id="btnWinNewTab" title="Mở tab mới">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <path d="M15 3h6v6M10 14L21 3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="window-body">
+      <div class="window-head">
+        <h1>Trung tâm công cụ</h1>
+        <p>// chọn một nền tảng bên dưới</p>
+      </div>
+
+      <div class="menu-launcher">
+        <button class="launch-btn iphone" data-menu="iphone">
+          <div class="launch-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="launch-title">iPhone / iCloud</div>
+            <div class="launch-desc">// check iCloud · FMI · IMEI</div>
+          </div>
+        </button>
+
+        <button class="launch-btn android" data-menu="android">
+          <div class="launch-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <div>
+            <div class="launch-title">Android</div>
+            <div class="launch-desc">// FRP · shortcuts · APK</div>
+          </div>
+        </button>
+
+        <button class="launch-btn windows" data-menu="windows">
+          <div class="launch-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="launch-title">Windows</div>
+            <div class="launch-desc">// browser · VPN · driver · tool</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="details-section">
+
+      <div class="platform-tabs">
+        <button class="platform-tab active" data-tab="iphone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="2" width="12" height="20" rx="3"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+          iPhone
+        </button>
+        <button class="platform-tab" data-tab="android">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+          Android
+        </button>
+        <button class="platform-tab" data-tab="windows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+          Windows
+        </button>
+      </div>
+
+      <!-- ═══════ IPHONE ═══════ -->
+      <div class="tab-panel active" data-panel="iphone">
+        <div class="detail-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v8M8 12h8"/>
+          </svg>
+          iPhone / iCloud
+        </div>
+        <div class="detail-sub">// kiểm tra iCloud Lock, Find My iPhone, IMEI</div>
+
+        <div class="info-block">
+          <b>iCloud Lock</b> là tính năng bảo mật của Apple. Thiết bị bị khóa vào Apple ID chủ cũ nếu Find My
+          iPhone chưa tắt.
+          <ul>
+            <li><b>iCloud ON</b> — thiết bị đang bị khóa.</li>
+            <li><b>iCloud OFF</b> — an toàn để mua.</li>
+          </ul>
+        </div>
+
+        <div class="section-sub">Dịch vụ check iCloud</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://sickw.com/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L3 7l9 5 9-5-9-5z"/>
+                <path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Sickw</div>
+              <div class="tool-desc">full check · iCloud · FMI · IMEI</div>
+            </div>
+            <span class="tool-badge ios">#1</span>
+          </a>
+          <a class="tool-item" href="https://iunlocker.com/check_icloud.php" target="_blank" rel="noopener">
+            <div class="tool-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">iUnlocker</div>
+              <div class="tool-desc">iCloud status · Find My iPhone</div>
+            </div>
+            <span class="tool-badge ios">#2</span>
+          </a>
+          <a class="tool-item" href="https://test.ifreeicloud.co.uk/free-check" target="_blank" rel="noopener">
+            <div class="tool-icon red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">iFreeiCloud</div>
+              <div class="tool-desc">free IMEI / serial check</div>
+            </div>
+            <span class="tool-badge ios">#3</span>
+          </a>
+          <a class="tool-item" href="https://imeicheck.com/icloud-check" target="_blank" rel="noopener">
+            <div class="tool-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">IMEICheck</div>
+              <div class="tool-desc">free iCloud status · FMI ON/OFF</div>
+            </div>
+            <span class="tool-badge ios">#4</span>
+          </a>
+          <a class="tool-item" href="https://www.imei24.com/check/iphone_icloud/" target="_blank" rel="noopener">
+            <div class="tool-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">IMEI24</div>
+              <div class="tool-desc">activation lock check</div>
+            </div>
+            <span class="tool-badge ios">#5</span>
+          </a>
+          <a class="tool-item" href="https://iphoneimei.info/" target="_blank" rel="noopener">
+            <div class="tool-icon sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">iPhoneIMEI</div>
+              <div class="tool-desc">IMEI · iCloud · blacklist</div>
+            </div>
+            <span class="tool-badge ios">#6</span>
+          </a>
+          <a class="tool-item" href="https://checkcoverage.apple.com/" target="_blank" rel="noopener">
+            <div class="tool-icon gray">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Apple Coverage</div>
+              <div class="tool-desc">bảo hành chính hãng Apple</div>
+            </div>
+            <span class="tool-badge ios">official</span>
+          </a>
+        </div>
+
+        <div class="section-sub">Quản lý thiết bị Apple</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.apple.com/vn/itunes/" target="_blank" rel="noopener">
+            <div class="tool-icon pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"/>
+                <circle cx="6" cy="18" r="3"/>
+                <circle cx="18" cy="16" r="3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">iTunes</div>
+              <div class="tool-desc">quản lý iPhone · backup · restore</div>
+            </div>
+            <span class="tool-badge win">pc</span>
+          </a>
+          <a class="tool-item" href="https://imazing.com/" target="_blank" rel="noopener">
+            <div class="tool-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <path d="M7 10l3 3 7-7"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">iMazing</div>
+              <div class="tool-desc">quản lý iOS nâng cao · backup · transfer</div>
+            </div>
+            <span class="tool-badge win">pc</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ═══════ ANDROID ═══════ -->
+      <div class="tab-panel" data-panel="android">
+        <div class="detail-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Android / FRP
+        </div>
+        <div class="detail-sub">// shortcuts, APK và dịch vụ bypass FRP</div>
+
+        <div class="info-block warning">
+          <b>Cảnh báo:</b> Shortcuts chỉ hoạt động trên <b>Chrome Android</b> khi thiết bị bị khóa FRP.
+        </div>
+
+        <div class="section-sub">Dịch vụ Bypass FRP</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://vnrom.net/bypass/" target="_blank" rel="noopener">
+            <div class="tool-icon neon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L3 7l9 5 9-5-9-5z"/>
+                <path d="M3 12l9 5 9-5"/>
+                <path d="M3 17l9 5 9-5"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">vnROM Bypass</div>
+              <div class="tool-desc">FRP bypass APK · android 2026</div>
+            </div>
+            <span class="tool-badge droid">#1</span>
+          </a>
+          <a class="tool-item" href="https://frpbypass.romstage.com/vnrom/" target="_blank" rel="noopener">
+            <div class="tool-icon sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <path d="M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">ROMStage FRP</div>
+              <div class="tool-desc">vnROM bypass all latest apk</div>
+            </div>
+            <span class="tool-badge droid">#2</span>
+          </a>
+        </div>
+
+        <div class="section-sub">Shortcuts Android</div>
+        <div class="shortcut-grid" id="shortcutGrid"></div>
+
+        <div class="section-sub rare">APK tham khảo — không tải trực tiếp</div>
+        <div class="apk-list" id="apkList"></div>
+      </div>
+
+      <!-- ═══════ WINDOWS ═══════ -->
+      <div class="tab-panel" data-panel="windows">
+        <div class="detail-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+          Windows
+        </div>
+        <div class="detail-sub">// browser, VPN, tiện ích, driver và công cụ</div>
+
+        <div class="section-sub">Trình duyệt web</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.google.com/intl/vi_vn/chrome/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 8h9M4.5 16l4.5-8M14 17.5l4-8"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Chrome</div>
+              <div class="tool-desc">trình duyệt phổ biến · chromium</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://brave.com/vi/" target="_blank" rel="noopener">
+            <div class="tool-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l9 5v10l-9 5-9-5V7z"/>
+                <path d="M9 10l3 2 3-2M9 14h6"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Brave</div>
+              <div class="tool-desc">chặn quảng cáo · bảo mật · nhanh</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.firefox.com/vi/" target="_blank" rel="noopener">
+            <div class="tool-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2c4 4 6 8 4 12s-8 4-10-2 2-8 6-10z"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Firefox</div>
+              <div class="tool-desc">mã nguồn mở · riêng tư</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://coccoc.com/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20"/>
+                <path d="M12 2a15 15 0 010 20"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Cốc Cốc</div>
+              <div class="tool-desc">trình duyệt việt · tải nhanh</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+        </div>
+
+        <div class="section-sub">VPN &amp; bảo mật</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://protonvpn.com/download" target="_blank" rel="noopener">
+            <div class="tool-icon indigo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">ProtonVPN</div>
+              <div class="tool-desc">vpn thụy sĩ · không log · miễn phí</div>
+            </div>
+            <span class="tool-badge vpn">vpn</span>
+          </a>
+          <a class="tool-item" href="https://nordvpn.com/download/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2v20M2 12h20"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">NordVPN</div>
+              <div class="tool-desc">vpn phổ biến · server toàn cầu</div>
+            </div>
+            <span class="tool-badge vpn">vpn</span>
+          </a>
+          <a class="tool-item" href="https://www.hidemyass.com/vi-vn/download-vpn-pc" target="_blank" rel="noopener">
+            <div class="tool-icon gray">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">HideMyAss</div>
+              <div class="tool-desc">vpn lâu đời · nhiều server</div>
+            </div>
+            <span class="tool-badge vpn">vpn</span>
+          </a>
+          <a class="tool-item" href="https://mullvad.net/en" target="_blank" rel="noopener">
+            <div class="tool-icon yellow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L3 7l9 5 9-5-9-5z"/>
+                <path d="M3 12l9 5 9-5"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Mullvad</div>
+              <div class="tool-desc">vpn ẩn danh · không log</div>
+            </div>
+            <span class="tool-badge vpn">vpn</span>
+          </a>
+        </div>
+
+        <div class="section-sub">Tiện ích</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.capcut.com/" target="_blank" rel="noopener">
+            <div class="tool-icon pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 7l-7 5 7 5V7z"/>
+                <rect x="1" y="5" width="15" height="14" rx="2"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">CapCut</div>
+              <div class="tool-desc">chỉnh sửa video · hiệu ứng</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.videolan.org/index.html" target="_blank" rel="noopener">
+            <div class="tool-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">VLC Media Player</div>
+              <div class="tool-desc">trình phát media đa định dạng</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.ultraviewer.net/vi/download.html" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <path d="M7 10l5 5 5-5"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">UltraViewer</div>
+              <div class="tool-desc">điều khiển máy tính từ xa</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.win-rar.com/postdownload.html?&L=0" target="_blank" rel="noopener">
+            <div class="tool-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <path d="M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">WinRAR</div>
+              <div class="tool-desc">giải nén rar · zip · 7z</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+        </div>
+
+        <div class="section-sub">Trình giả lập Android</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.3u.com/" target="_blank" rel="noopener">
+            <div class="tool-icon indigo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <path d="M9 6h6M9 10h6"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">3uTools</div>
+              <div class="tool-desc">quản lý iPhone · flash · jailbreak</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.ldplayer.net/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">LDPlayer</div>
+              <div class="tool-desc">giả lập android cho pc · game</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+          <a class="tool-item" href="https://www.bluestacks.com/download.html" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">BlueStacks</div>
+              <div class="tool-desc">giả lập android phổ biến nhất</div>
+            </div>
+            <span class="tool-badge win">win</span>
+          </a>
+        </div>
+
+        <div class="section-sub">Driver mạng</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.intel.vn/content/www/vn/vi/download/18293/intel-network-adapter-driver-for-windows-10.html" target="_blank" rel="noopener">
+            <div class="tool-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Intel Network Adapter</div>
+              <div class="tool-desc">driver card mạng Intel · win 10</div>
+            </div>
+            <span class="tool-badge driver">driver</span>
+          </a>
+          <a class="tool-item" href="https://www.intel.com/content/www/us/en/support/articles/000059060/wireless.html" target="_blank" rel="noopener">
+            <div class="tool-icon sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.55a11 11 0 0114.08 0"/>
+                <path d="M1.42 9a16 16 0 0121.16 0"/>
+                <path d="M8.53 16.11a6 6 0 016.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Intel Wireless Driver</div>
+              <div class="tool-desc">driver card wifi Intel</div>
+            </div>
+            <span class="tool-badge driver">driver</span>
+          </a>
+        </div>
+
+        <div class="section-sub rare">Công cụ tác giả</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://ngthanhdiem.github.io" target="_blank" rel="noopener">
+            <div class="tool-icon indigo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">ngthanhdiem.github.io</div>
+              <div class="tool-desc">github pages · trang cá nhân</div>
+            </div>
+            <span class="tool-badge web">web</span>
+          </a>
+          <a class="tool-item" href="https://thanhdiem.pages.dev" target="_blank" rel="noopener">
+            <div class="tool-icon pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20M12 2a15 15 0 010 20"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">thanhdiem.pages.dev</div>
+              <div class="tool-desc">trang chính thức tác giả</div>
+            </div>
+            <span class="tool-badge web">web</span>
+          </a>
+          <a class="tool-item" href="https://phimtat.vn/" target="_blank" rel="noopener">
+            <div class="tool-icon teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7 14h10"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-name">Phím Tắt VN</div>
+              <div class="tool-desc">tra cứu phím tắt máy tính</div>
+            </div>
+            <span class="tool-badge web">web</span>
+          </a>
+        </div>
+
+        <div class="section-sub rare">EXE Tools — tham khảo</div>
+        <div class="apk-list" id="exeList"></div>
+      </div>
+
+      <div class="credit">
+        <div>
+          <b>ThanhDiem Hub</b> · Tổng hợp bởi <b>Nguyen Thanh Diem</b>. Danh sách shortcuts, APK và EXE được
+          tổng hợp từ vnrom.net và các nguồn công khai.
+        </div>
+      </div>
+    </div>
+
+    <div class="policy-section">
+      <div class="policy-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Chính sách &amp; bảo mật
+      </div>
+      <div class="policy-sub">// điều khoản sử dụng, chính sách bảo mật và quy định dữ liệu</div>
+
+      <div class="policy-grid">
+        <div class="policy-block">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            Chính sách bảo mật
+          </h3>
+          Trang này <b>không thu thập dữ liệu cá nhân</b>, không lưu log truy cập, không dùng cookie theo dõi.
+          Khi bạn mở các dịch vụ bên ngoài, dữ liệu sẽ được xử lý bởi trang đó theo chính sách riêng của họ.
+        </div>
+
+        <div class="policy-block">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Điều khoản sử dụng
+          </h3>
+          <ul>
+            <li>Chỉ dùng các công cụ cho mục đích nghiên cứu và khôi phục thiết bị bạn sở hữu hợp pháp.</li>
+            <li>Không dùng để bypass thiết bị không thuộc quyền sở hữu của bạn.</li>
+            <li>Tự chịu trách nhiệm pháp lý với hành vi của mình.</li>
+            <li>Chúng tôi không chịu trách nhiệm cho bất kỳ thiệt hại nào phát sinh.</li>
+          </ul>
+        </div>
+
+        <div class="policy-block">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+            </svg>
+            Miễn trừ trách nhiệm
+          </h3>
+          Tất cả nội dung, shortcut, file APK, EXE và hướng dẫn trên trang được cung cấp <b>"nguyên trạng"</b>,
+          không có bảo hành dưới bất kỳ hình thức nào.
+        </div>
+
+        <div class="policy-block">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Bên thứ ba
+          </h3>
+          Trang chứa liên kết đến các dịch vụ bên thứ ba. Chúng tôi <b>không kiểm soát</b> nội dung, chính sách
+          hoặc tính an toàn của các trang đó.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-links">
+      <a class="footer-link" href="https://t.me/ThanhDiemX" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+        </svg>
+        <span>@ThanhDiemX</span>
+      </a>
+      <a class="footer-link" href="https://thanhdiem.pages.dev" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
+        <span>thanhdiem.pages.dev</span>
+      </a>
+    </div>
+    <div class="footer-credit">// Nguyen Thanh Diem · 2026</div>
+  </footer>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════
+   MATRIX RAIN
+   ═══════════════════════════════════════════ */
+(function initMatrix() {
+  const canvas = document.getElementById("matrixCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  let w = 0, h = 0;
+  let cols = 0;
+  let drops = [];
+  const fontSize = 14;
+  const chars = "01ABCDEF!@#$%&*<>{}[]/\\";
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cols = Math.floor(w / fontSize);
+    drops = new Array(cols).fill(1);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  function draw() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "#00ff66";
+    ctx.font = fontSize + "px monospace";
+    for (let i = 0; i < drops.length; i++) {
+      const ch = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+      ctx.fillText(ch, x, y);
+      if (y > h && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  let last = 0;
+  function loop(ts) {
+    if (ts - last > 55) {
+      draw();
+      last = ts;
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ═══════════════════════════════════════════
+   WELCOME
+   ═══════════════════════════════════════════ */
+document.getElementById("btnWelcomeAgree").addEventListener("click", () => {
+  document.getElementById("welcomeOverlay").classList.add("hide");
+  setTimeout(() => {
+    document.getElementById("welcomeOverlay").style.display = "none";
+  }, 500);
+});
+
+/* ═══════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════ */
+const SHORTCUTS = [
+  { name: "Galaxy Store",          desc: "open galaxy store",       href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_GALLERY;end", icon: "gallery" },
+  { name: "Quick Search",          desc: "open quick search box",   href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MARKET;end",  icon: "search" },
+  { name: "Settings",              desc: "open setting",            href: "intent://#Intent;action=android.settings.SETTINGS;end",                                             icon: "settings" },
+  { name: "QR Scan",               desc: "open qr scan activity",   href: "intent://#Intent;action=android.intent.action.VIEW;scheme=qr;end",                                  icon: "qr" },
+  { name: "Activity Manager",      desc: "open activity manager",   href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MANAGER;end", icon: "activity" },
+  { name: "Screen Smartlock",      desc: "open screen smartlock",   href: "intent://#Intent;action=android.app.action.SET_NEW_PASSWORD;end",                                   icon: "lock" },
+  { name: "Samsung My Files",      desc: "open samsung my files",   href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_FILES;end", icon: "files" },
+  { name: "Chrome",                desc: "open chrome",             href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_BROWSER;end", icon: "globe" },
+  { name: "Calculator",            desc: "open calculator",         href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_CALCULATOR;end", icon: "calc" },
+  { name: "Samsung Internet",      desc: "open samsung internet",   href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_BROWSER;package=com.sec.android.app.sbrowser;end", icon: "globe" },
+  { name: "Alliance Shield",       desc: "open alliance shield",    href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.sec.android.app.launcher;end", icon: "shield" },
+  { name: "Hidden Settings",       desc: "open hidden settings",    href: "intent://#Intent;action=android.settings.SETTINGS;end",                                             icon: "settings" },
+  { name: "Login Account",         desc: "open login account",      href: "intent://#Intent;action=android.settings.ADD_ACCOUNT_SETTINGS;end",                                 icon: "user" },
+  { name: "Home Launcher",         desc: "open home launcher",      href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.HOME;end",      icon: "home" },
+  { name: "*#0*#",                 desc: "open test menu",          href: "tel:*%230*%23",                                                                                     icon: "ussd", ussd: true },
+  { name: "*#85#",                 desc: "enable adb",              href: "tel:*%2385%23",                                                                                     icon: "ussd", ussd: true },
+  { name: "ADB Settings",          desc: "open adb settings",       href: "intent://#Intent;action=android.settings.APPLICATION_DEVELOPMENT_SETTINGS;end",                     icon: "code" },
+  { name: "USB Setting",           desc: "open usb setting",        href: "intent://#Intent;action=android.settings.USB_SETTINGS;end",                                         icon: "usb" },
+  { name: "Mi File Manager",       desc: "open mi file manager",    href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.mi.android.globalFileexplorer;end", icon: "files" },
+  { name: "OPPO Phone Clone",      desc: "open oppo phone clone",   href: "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.coloros.backuprestore;end", icon: "copy" }
+];
+
+const APK_LIST = [
+  "Activity_Launcher.apk","Alliance_Shield.apk","Package_Manager.apk","Package_Disabler_Pro.apk","Package_Disabler_PDC.apk",
+  "Disable_systemUI.xml","Disable_GoogleService.xml","Disable_MDM_Knox.xml","Disable_PlayServices.xml",
+  "Android_5_GAM.apk","Android_6_GAM.apk","Android_8-9-10_GAM.apk","Notification_Bar.apk","Google_Setting.apk",
+  "FRP_Bypass.apk","FRP_Android_7.apk","FRP_vnROM.apk","Test_DPC.apk","QuickShortcutMaker.apk",
+  "Apex_Launcher.apk","Nova_Launcher.apk","Menu_Button.apk","ES_File_Explorer.apk","Setting.apk",
+  "HushSMS.apk","Phone_Clone.apk","File_Commander_Manager.apk","Smart_Switch_Mobile.apk"
+];
+
+const EXE_LIST = [
+  "ADB_Fastboot_Tool.exe","FRP_Hijacker.exe","Odin3_v3.14.4.exe","SP_Flash_Tool_v5.exe","Mi_Flash_Tool.exe",
+  "Realterm.exe","QPST_Tool.exe","Uni_Android_Tool.exe","Android_Multi_Tool.exe","iDevice_Helper.exe",
+  "Minimal_ADB_Fastboot.exe","TFT_Unlock_Tool.exe"
+];
+
+const ICONS = {
+  gallery:  '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  search:   '<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  qr:       '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  lock:     '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+  files:    '<path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>',
+  globe:    '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20 15 15 0 010-20z"/>',
+  calc:     '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M12 10h2M8 14h2M12 14h2M8 18h2M12 18h2"/>',
+  shield:   '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  user:     '<circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>',
+  home:     '<path d="M3 12l9-9 9 9M5 10v10h14V10"/>',
+  ussd:     '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>',
+  code:     '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  usb:      '<path d="M12 2v6M8 5l4-3 4 3M6 12h12v8a2 2 0 01-2 2H8a2 2 0 01-2-2z"/>',
+  copy:     '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/>'
+};
+
+/* RENDER */
+(function renderShortcuts() {
+  const grid = document.getElementById("shortcutGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  SHORTCUTS.forEach(s => {
+    const a = document.createElement("a");
+    a.className = "shortcut-item";
+    a.href = s.href;
+    a.innerHTML = `
+      <div class="shortcut-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          ${ICONS[s.icon] || ICONS.settings}
+        </svg>
+      </div>
+      <div class="shortcut-info">
+        <div class="shortcut-name">${s.name}</div>
+        <div class="shortcut-desc">${s.desc}</div>
+      </div>
+      <span class="shortcut-badge">${s.ussd ? "ussd" : "open"}</span>
+    `;
+    grid.appendChild(a);
+  });
+})();
+
+(function renderApkList() {
+  const list = document.getElementById("apkList");
+  if (!list) return;
+  list.innerHTML = "";
+  APK_LIST.forEach(name => {
+    const isXml = name.endsWith(".xml");
+    const el = document.createElement("div");
+    el.className = "apk-item";
+    el.innerHTML = `
+      <div class="apk-icon ${isXml ? "xml" : ""}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          ${isXml
+            ? '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>'
+            : '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>'}
+        </svg>
+      </div>
+      <span class="apk-name">${name}</span>
+      <span class="apk-note">${isXml ? "xml" : "apk"}</span>
+    `;
+    el.addEventListener("click", () => showFileError(name));
+    list.appendChild(el);
+  });
+})();
+
+(function renderExeList() {
+  const list = document.getElementById("exeList");
+  if (!list) return;
+  list.innerHTML = "";
+  EXE_LIST.forEach(name => {
+    const el = document.createElement("div");
+    el.className = "apk-item";
+    el.innerHTML = `
+      <div class="apk-icon exe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <span class="apk-name">${name}</span>
+      <span class="apk-note">exe</span>
+    `;
+    el.addEventListener("click", () => showFileError(name));
+    list.appendChild(el);
+  });
+})();
+
+function showFileError(filename) {
+  const modal = document.createElement("div");
+  modal.style.cssText = `
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.2s cubic-bezier(0.4,0,0.2,1);
+  `;
+  modal.innerHTML = `
+    <div style="
+      max-width: 440px; width: 100%;
+      background: rgba(10, 15, 10, 0.98);
+      border: 1px solid rgba(255, 170, 0, 0.3);
+      border-left: 3px solid #ffaa00;
+      border-radius: 10px;
+      padding: 26px;
+      box-shadow: 0 0 40px rgba(255,170,0,0.15), 0 32px 80px rgba(0,0,0,0.85);
+      text-align: center;
+      font-family: var(--font-mono);
+      animation: fadeUp 0.3s cubic-bezier(0.16,1,0.3,1);
+    ">
+      <div style="
+        width: 52px; height: 52px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: rgba(255,170,0,0.1);
+        border: 1px solid rgba(255,170,0,0.3);
+        display: grid; place-items: center;
+        color: #ffaa00;
+        box-shadow: 0 0 24px rgba(255,170,0,0.2);
+      ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#ffaa00;margin-bottom:10px;letter-spacing:0.1em;text-transform:uppercase">// file.unavailable</div>
+      <div style="font-size:12px;color:#6b9b6b;line-height:1.6;margin-bottom:6px">
+        <code style="font-family:var(--font-mono);font-size:11px;padding:3px 7px;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.2);border-radius:4px;color:#ffbb33">${filename}</code>
+      </div>
+      <div style="font-size:11.5px;color:#6b9b6b;line-height:1.65;margin-bottom:18px">
+        Chỉ <b style="color:#d8ffd8">shortcuts</b> mới hoạt động được. Các file APK / EXE là danh sách tham khảo.
+      </div>
+      <button class="modal-close" style="
+        padding: 10px 22px;
+        background: linear-gradient(135deg, #00ff66, #00d9ff);
+        color: #000; border: none;
+        border-radius: 8px;
+        font-size: 12px; font-weight: 700;
+        font-family: var(--font-mono);
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0,255,102,0.35);
+        text-transform: uppercase;
+      ">Đã hiểu</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+  modal.querySelector(".modal-close").addEventListener("click", () => modal.remove());
+  const escHandler = (e) => {
+    if (e.key === "Escape") { modal.remove(); document.removeEventListener("keydown", escHandler); }
+  };
+  document.addEventListener("keydown", escHandler);
+}
+
+/* SPLASH */
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("splash").classList.add("hide");
+  }, 1600);
+});
+
+/* LAUNCH */
+document.querySelectorAll(".launch-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const menu = btn.dataset.menu;
+    document.querySelectorAll(".platform-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.tab === menu);
+    });
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.classList.toggle("active", p.dataset.panel === menu);
+    });
+    document.body.dataset.mode = menu;
+    document.querySelector(".details-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+document.querySelectorAll(".platform-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".platform-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.classList.toggle("active", p.dataset.panel === target);
+    });
+    document.body.dataset.mode = target;
+  });
+});
+
+/* ZOOM LOCK */
+document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
+document.addEventListener("gesturechange", e => e.preventDefault(), { passive: false });
+document.addEventListener("gestureend", e => e.preventDefault(), { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener("touchend", (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+document.addEventListener("wheel", (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && ["+","-","=","0"].includes(e.key)) e.preventDefault();
+});
+
+/* SOUND — to hơn */
+let audioCtx = null;
+function initAudio() {
+  if (audioCtx) return;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; }
+}
+function unlockAudio() {
+  initAudio();
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+}
+function playTap(freq = 800, duration = 0.09, volume = 0.14) {
+  initAudio();
+  if (!audioCtx) return;
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration + 0.02);
+  } catch (e) {}
+}
+document.addEventListener("pointerdown", (e) => {
+  unlockAudio();
+  playTap(e.target.closest("button, a, .tool-item, .shortcut-item, .platform-tab") ? 1000 : 700, 0.08, 0.12);
+}, { passive: true });
+document.addEventListener("touchstart", unlockAudio, { passive: true, once: true });
+document.addEventListener("click", unlockAudio, { passive: true, once: true });
+
+/* WINDOW */
+const mainWindow = document.getElementById("mainWindow");
+document.getElementById("btnWinMin").addEventListener("click", () => mainWindow.classList.toggle("minimized"));
+document.getElementById("btnWinZoom").addEventListener("click", () => mainWindow.classList.toggle("maxed"));
+document.getElementById("btnWinClose").addEventListener("click", () => {
+  document.body.style.transition = "opacity 0.5s";
+  document.body.style.opacity = "0";
+  setTimeout(() => { document.body.style.opacity = "1"; }, 900);
+});
+document.getElementById("btnWinReload").addEventListener("click", () => {
+  mainWindow.classList.remove("maxed", "minimized");
+  document.querySelectorAll(".platform-tab").forEach((t, i) => t.classList.toggle("active", i === 0));
+  document.querySelectorAll(".tab-panel").forEach((p, i) => p.classList.toggle("active", i === 0));
+  document.body.dataset.mode = "iphone";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+document.getElementById("btnWinNewTab").addEventListener("click", () => {
+  window.open(location.href, "_blank", "noopener,noreferrer");
+});
+</script>
+</body>
+</html>
