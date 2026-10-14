@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="ThanhDiem Hub" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="ThanhDiem Hub — Multi-platform tools." />
+<meta name="description" content="ThanhDiem Hub — Multi-platform bypass and utility toolkit." />
 <title>ThanhDiem Hub</title>
 <link rel="icon" type="image/jpeg" href="thanhdiem.jpg" />
 <link rel="apple-touch-icon" href="thanhdiem.jpg" />
@@ -56,14 +56,10 @@ html, body {
 }
 body { overflow-x: hidden; position: relative; }
 
-#matrixCanvas {
-  position: fixed; inset: 0; z-index: 0;
-  pointer-events: none;
-  opacity: 0.14;
-}
+#matrixCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.14; }
 .scanlines {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 3px);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
   mix-blend-mode: multiply;
   opacity: 0.4;
 }
@@ -77,106 +73,91 @@ body { overflow-x: hidden; position: relative; }
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* LANGUAGE SELECTOR */
-.lang-overlay {
-  position: fixed; inset: 0; z-index: 600;
-  background: rgba(0, 0, 0, 0.92);
+/* TOP BAR — lang + stats */
+.topbar {
+  position: fixed;
+  top: 12px; right: 12px;
+  z-index: 200;
+  display: flex; gap: 8px; align-items: center;
+  opacity: 0;
+  animation: fadeIn 0.6s 0.3s var(--ease) forwards;
+}
+.topbar-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  background: rgba(6, 10, 6, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  display: none;
-  align-items: center; justify-content: center;
-  padding: 24px;
-  animation: fadeIn 0.4s var(--ease);
-}
-.lang-overlay.show { display: flex; }
-.lang-box {
-  max-width: 520px; width: 100%;
-  background: rgba(10, 15, 10, 0.98);
-  border: 1px solid var(--border-hi);
-  border-radius: 14px;
-  padding: 36px 32px;
-  box-shadow: 0 0 0 1px rgba(0, 255, 100, 0.08) inset, 0 0 60px rgba(0, 255, 100, 0.15), 0 30px 80px rgba(0, 0, 0, 0.9);
-  animation: welcomeIn 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-mid);
   font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.lang-box::before {
-  content: "";
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: scanLine 3s linear infinite;
+.topbar-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 20px var(--accent-soft);
 }
-.lang-header {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 20px;
-  font-size: 11px; letter-spacing: 0.15em;
-  color: var(--accent); text-transform: uppercase;
+.topbar-btn svg { width: 14px; height: 14px; }
+.topbar-flag { font-size: 14px; }
+
+/* LANG MENU */
+.lang-menu {
+  position: fixed;
+  top: 56px; right: 12px;
+  z-index: 201;
+  background: rgba(6, 10, 6, 0.98);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--border-hi);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 255, 100, 0.06) inset, 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 255, 100, 0.1);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  animation: dropdownIn 0.25s var(--ease-out);
+}
+.lang-menu.show { display: flex; }
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lang-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-align: left;
+  width: 100%;
+}
+.lang-item:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.lang-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 700;
 }
-.lang-header::before {
-  content: "";
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-.lang-title {
-  font-size: 20px; font-weight: 800;
-  color: var(--text); margin-bottom: 8px;
-  letter-spacing: -0.03em;
-  font-family: var(--font-sans);
-  text-align: center;
-}
-.lang-sub {
-  font-size: 12.5px;
-  color: var(--text-mid);
-  margin-bottom: 24px;
-  line-height: 1.6;
-  text-align: center;
-  font-family: var(--font-mono);
-}
-.lang-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.lang-btn {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 18px;
-  background: rgba(0, 255, 100, 0.02);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: inherit; color: inherit;
-  text-align: left;
-  transition: all 0.25s var(--ease);
-  position: relative;
-  overflow: hidden;
-}
-.lang-btn:hover {
-  background: rgba(0, 255, 100, 0.06);
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(0, 255, 100, 0.15);
-}
-.lang-flag {
-  font-size: 22px;
-  font-family: var(--font-sans);
-  width: 32px; text-align: center;
-  flex-shrink: 0;
-}
-.lang-info { flex: 1; min-width: 0; }
-.lang-name {
-  font-size: 13.5px; font-weight: 700;
-  color: var(--text); margin-bottom: 2px;
-  font-family: var(--font-sans);
-}
-.lang-native {
-  font-size: 11px; color: var(--text-mid);
-  font-family: var(--font-mono);
-}
+.lang-item .lang-flag { font-size: 16px; }
+.lang-item .lang-name { flex: 1; }
+.lang-item .lang-native { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
 
 /* WELCOME */
 .welcome-overlay {
@@ -188,10 +169,9 @@ body { overflow-x: hidden; position: relative; }
   align-items: center; justify-content: center;
   padding: 24px;
   animation: fadeIn 0.4s var(--ease);
-  transition: opacity 0.5s var(--ease), visibility 0.5s var(--ease);
 }
 .welcome-overlay.show { display: flex; }
-.welcome-overlay.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.welcome-overlay.hide { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.5s var(--ease), visibility 0.5s var(--ease); }
 .welcome-box {
   max-width: 520px; width: 100%;
   background: rgba(10, 15, 10, 0.96);
@@ -327,14 +307,14 @@ body { overflow-x: hidden; position: relative; }
 .wrap {
   min-height: 100vh;
   display: flex; flex-direction: column; align-items: center;
-  padding: 56px 24px 48px;
+  padding: 64px 24px 48px;
   position: relative; z-index: 2;
   max-width: 100%;
 }
 
 .brand {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   opacity: 0; animation: fadeDown 0.9s 0.1s var(--ease-out) forwards;
 }
 .brand-name {
@@ -355,8 +335,37 @@ body { overflow-x: hidden; position: relative; }
   font-family: var(--font-mono);
 }
 
+/* STATS BAR */
+.stats-bar {
+  display: flex; flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+  width: 100%; max-width: 960px;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.15s var(--ease-out) forwards;
+}
+.stat-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 255, 100, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mid);
+}
+.stat-item strong { color: var(--accent); font-weight: 700; }
+.stat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
 .disclaimer {
-  width: 100%; max-width: 860px;
+  width: 100%; max-width: 960px;
   margin-bottom: 22px;
   padding: 14px 18px;
   background: rgba(255, 170, 0, 0.04);
@@ -368,7 +377,7 @@ body { overflow-x: hidden; position: relative; }
   color: #ffbb33;
   line-height: 1.6;
   font-family: var(--font-mono);
-  opacity: 0; animation: fadeUp 0.9s 0.15s var(--ease-out) forwards;
+  opacity: 0; animation: fadeUp 0.9s 0.2s var(--ease-out) forwards;
 }
 .disclaimer svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
 .disclaimer b { color: #fff; }
@@ -381,7 +390,7 @@ body { overflow-x: hidden; position: relative; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 0 0 1px rgba(0, 255, 100, 0.04) inset, 0 0 40px rgba(0, 255, 100, 0.06), 0 30px 80px rgba(0, 0, 0, 0.85);
-  opacity: 0; animation: fadeUp 0.9s 0.2s var(--ease-out) forwards;
+  opacity: 0; animation: fadeUp 0.9s 0.25s var(--ease-out) forwards;
   overflow: hidden;
   position: relative;
 }
@@ -455,7 +464,7 @@ body { overflow-x: hidden; position: relative; }
 .window-body {
   padding: 36px 36px 32px;
   transition: max-height 0.5s var(--ease), padding 0.5s var(--ease), opacity 0.3s var(--ease);
-  max-height: 12000px;
+  max-height: 20000px;
   overflow: hidden;
 }
 .window.minimized .window-body {
@@ -627,6 +636,12 @@ body { overflow-x: hidden; position: relative; }
   border-left-color: rgba(255, 170, 0, 0.5);
 }
 .info-block.warning b { color: #ffbb33; }
+.info-block.bypass {
+  background: rgba(0, 255, 100, 0.04);
+  border-color: rgba(0, 255, 100, 0.25);
+  border-left-color: var(--accent);
+}
+.info-block.bypass b { color: var(--accent); }
 
 .section-sub {
   font-size: 10.5px; font-weight: 700;
@@ -643,6 +658,18 @@ body { overflow-x: hidden; position: relative; }
   background: linear-gradient(90deg, var(--border-hi), transparent);
 }
 .section-sub.rare { margin-top: 32px; opacity: 0.65; }
+.section-sub.bypass-head {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 16px 0 12px;
+  padding: 10px 14px;
+  background: rgba(0, 255, 100, 0.04);
+  border: 1px solid rgba(0, 255, 100, 0.2);
+  border-radius: 8px;
+  text-shadow: 0 0 8px var(--accent);
+}
+.section-sub.bypass-head::before { content: "▸"; color: var(--accent); }
+.section-sub.bypass-head::after { display: none; }
 
 .tool-list { display: flex; flex-direction: column; gap: 5px; }
 .tool-item {
@@ -729,6 +756,9 @@ body { overflow-x: hidden; position: relative; }
 .tool-badge.web    { color: #00d9ff; border-color: rgba(0, 217, 255, 0.4); }
 .tool-badge.vpn    { color: #ffaa00; border-color: rgba(255, 170, 0, 0.4); }
 .tool-badge.driver { color: #00cc99; border-color: rgba(0, 204, 153, 0.4); }
+.tool-badge.social { color: #ff66aa; border-color: rgba(255, 102, 170, 0.4); }
+.tool-badge.sec    { color: #ff3355; border-color: rgba(255, 51, 85, 0.4); }
+.tool-badge.bypass { color: var(--accent); border-color: rgba(0, 255, 100, 0.5); box-shadow: 0 0 10px rgba(0, 255, 100, 0.2); }
 
 .shortcut-grid {
   display: grid;
@@ -836,6 +866,47 @@ body { overflow-x: hidden; position: relative; }
   letter-spacing: 0.05em;
 }
 
+/* MINI CHANGELOG */
+.changelog {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: rgba(0, 255, 100, 0.015);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+.changelog-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.changelog-title::before {
+  content: "▸";
+  color: var(--accent);
+}
+.changelog ul { list-style: none; padding: 0; margin: 0; }
+.changelog li {
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 4px;
+}
+.changelog li::before {
+  content: "·";
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.changelog b { color: var(--text); }
+
 .policy-section {
   padding: 36px;
   background: rgba(0, 0, 0, 0.5);
@@ -898,7 +969,7 @@ body { overflow-x: hidden; position: relative; }
 .footer {
   margin-top: 36px;
   display: flex; flex-direction: column; align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 12px; color: var(--text-dim);
   opacity: 0; animation: fadeUp 0.9s 0.5s var(--ease-out) forwards;
   font-family: var(--font-mono);
@@ -932,6 +1003,19 @@ body { overflow-x: hidden; position: relative; }
   opacity: 0.6;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+.footer-meta {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 6px;
+}
+.footer-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.footer-meta span::before {
+  content: "·";
+  color: var(--accent);
 }
 
 /* TERMUX */
@@ -985,7 +1069,6 @@ body { overflow-x: hidden; position: relative; }
 }
 .termux-close:hover { color: var(--danger); border-color: var(--danger); background: rgba(255, 51, 85, 0.1); }
 .termux-close svg { width: 13px; height: 13px; }
-
 .termux-body {
   flex: 1;
   overflow-y: auto;
@@ -998,7 +1081,6 @@ body { overflow-x: hidden; position: relative; }
 .termux-body::-webkit-scrollbar { width: 8px; }
 .termux-body::-webkit-scrollbar-track { background: transparent; }
 .termux-body::-webkit-scrollbar-thumb { background: rgba(0, 255, 100, 0.2); border-radius: 4px; }
-
 .termux-line { white-space: pre-wrap; word-break: break-word; margin-bottom: 2px; }
 .termux-line.user { color: #00ff66; }
 .termux-line.user::before { content: "$ "; color: var(--accent); font-weight: 700; }
@@ -1009,7 +1091,6 @@ body { overflow-x: hidden; position: relative; }
 .termux-line.info { color: #00d9ff; }
 .termux-line .key { color: #b366ff; font-weight: 700; }
 .termux-line .val { color: #d8ffd8; }
-
 .termux-input-row {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 20px;
@@ -1036,10 +1117,14 @@ body { overflow-x: hidden; position: relative; }
   .shortcut-grid { grid-template-columns: 1fr; }
   .apk-list { grid-template-columns: 1fr; }
   .launch-btn { min-height: auto; flex-direction: row; align-items: center; gap: 14px; }
-  .lang-grid { grid-template-columns: 1fr; }
+  .stats-bar { flex-direction: column; align-items: stretch; }
+  .stat-item { justify-content: center; }
+  .topbar { top: 8px; right: 8px; }
+  .topbar-btn { padding: 6px 10px; font-size: 10px; }
+  .lang-menu { top: 48px; right: 8px; min-width: 170px; }
 }
 @media (max-width: 640px) {
-  .wrap { padding: 24px 14px; }
+  .wrap { padding: 48px 14px 24px; }
   .window-body { padding: 22px 16px 20px; }
   .details-section { padding: 22px 16px 26px; }
   .policy-section { padding: 22px 16px 26px; }
@@ -1053,9 +1138,9 @@ body { overflow-x: hidden; position: relative; }
   .window-right { min-width: 64px; }
   .platform-tab { font-size: 10.5px; padding: 9px 6px; }
   .platform-tab svg { width: 12px; height: 12px; }
-  .welcome-box, .lang-box { padding: 24px 20px; }
-  .welcome-title, .lang-title { font-size: 17px; }
-  .welcome-text, .lang-sub { font-size: 11.5px; }
+  .welcome-box { padding: 24px 20px; }
+  .welcome-title { font-size: 17px; }
+  .welcome-text { font-size: 11.5px; }
   .welcome-actions { flex-direction: column-reverse; }
   .btn-welcome { width: 100%; }
   .splash-text { font-size: 12px; }
@@ -1081,43 +1166,41 @@ body { overflow-x: hidden; position: relative; }
 <div class="vignette"></div>
 <div class="noise"></div>
 
-<!-- LANGUAGE SELECTOR -->
-<div class="lang-overlay" id="langOverlay">
-  <div class="lang-box">
-    <div class="lang-header">system.init</div>
-    <div class="lang-title" id="langTitle">Choose language</div>
-    <div class="lang-sub" id="langSub">Select your language. Your choice is saved for next time.</div>
-    <div class="lang-grid" id="langGrid">
-      <button class="lang-btn" data-lang="en">
-        <span class="lang-flag">🇺🇸</span>
-        <div class="lang-info">
-          <div class="lang-name">English</div>
-          <div class="lang-native">English</div>
-        </div>
-      </button>
-      <button class="lang-btn" data-lang="vi">
-        <span class="lang-flag">🇻🇳</span>
-        <div class="lang-info">
-          <div class="lang-name">Tiếng Việt</div>
-          <div class="lang-native">Vietnamese</div>
-        </div>
-      </button>
-      <button class="lang-btn" data-lang="zh">
-        <span class="lang-flag">🇨🇳</span>
-        <div class="lang-info">
-          <div class="lang-name">中文</div>
-          <div class="lang-native">Chinese</div>
-        </div>
-      </button>
-      <button class="lang-btn" data-lang="ar">
-        <span class="lang-flag">🇸🇦</span>
-        <div class="lang-info">
-          <div class="lang-name">العربية</div>
-          <div class="lang-native">Arabic</div>
-        </div>
-      </button>
-    </div>
-  </div>
+<!-- TOPBAR: lang button -->
+<div class="topbar">
+  <button class="topbar-btn" id="btnLang">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M2 12h20"/>
+      <path d="M12 2a15 15 0 010 20 15 15 0 010-20"/>
+    </svg>
+    <span class="topbar-flag" id="currentFlag">🇺🇸</span>
+    <span id="currentLangLabel">EN</span>
+  </button>
+</div>
+
+<!-- LANG MENU -->
+<div class="lang-menu" id="langMenu">
+  <button class="lang-item" data-lang="en">
+    <span class="lang-flag">🇺🇸</span>
+    <span class="lang-name">English</span>
+    <span class="lang-native">EN</span>
+  </button>
+  <button class="lang-item" data-lang="vi">
+    <span class="lang-flag">🇻🇳</span>
+    <span class="lang-name">Tiếng Việt</span>
+    <span class="lang-native">VI</span>
+  </button>
+  <button class="lang-item" data-lang="zh">
+    <span class="lang-flag">🇨🇳</span>
+    <span class="lang-name">中文</span>
+    <span class="lang-native">ZH</span>
+  </button>
+  <button class="lang-item" data-lang="ar">
+    <span class="lang-flag">🇸🇦</span>
+    <span class="lang-name">العربية</span>
+    <span class="lang-native">AR</span>
+  </button>
 </div>
 
 <!-- WELCOME -->
@@ -1149,6 +1232,13 @@ body { overflow-x: hidden; position: relative; }
     <div class="brand-name">ThanhDiem Hub</div>
     <div class="brand-tag" data-i18n="brand.tag">// multi-platform toolkit</div>
   </header>
+
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-dot"></span><span data-i18n="stat.bypass">Bypass</span>: <strong id="statBypass">2</strong></div>
+    <div class="stat-item"><span class="stat-dot"></span><span data-i18n="stat.icloud">iCloud</span>: <strong id="statIcloud">7</strong></div>
+    <div class="stat-item"><span class="stat-dot"></span><span data-i18n="stat.shortcuts">Shortcuts</span>: <strong id="statShortcuts">0</strong></div>
+    <div class="stat-item"><span class="stat-dot"></span><span data-i18n="stat.tools">Tools</span>: <strong id="statTools">0</strong></div>
+  </div>
 
   <div class="disclaimer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1197,8 +1287,8 @@ body { overflow-x: hidden; position: relative; }
             </svg>
           </div>
           <div>
-            <div class="launch-title" data-i18n="launch.iphone.title">iPhone / iCloud</div>
-            <div class="launch-desc" data-i18n="launch.iphone.desc">check iCloud · FMI · IMEI</div>
+            <div class="launch-title" data-i18n="launch.iphone.title">iPhone / iOS</div>
+            <div class="launch-desc" data-i18n="launch.iphone.desc">iCloud · iOS tools · security</div>
           </div>
         </button>
 
@@ -1211,7 +1301,7 @@ body { overflow-x: hidden; position: relative; }
           </div>
           <div>
             <div class="launch-title" data-i18n="launch.android.title">Android</div>
-            <div class="launch-desc" data-i18n="launch.android.desc">FRP · shortcuts · APK</div>
+            <div class="launch-desc" data-i18n="launch.android.desc">FRP · shortcuts · APK · social</div>
           </div>
         </button>
 
@@ -1237,6 +1327,7 @@ body { overflow-x: hidden; position: relative; }
           </div>
           <div>
             <div class="launch-title">Termux</div>
+            <div class="launch-desc" data-i18n="launch.termux.desc">terminal · tiktok downloader</div>
           </div>
         </button>
       </div>
@@ -1268,19 +1359,20 @@ body { overflow-x: hidden; position: relative; }
         </button>
       </div>
 
-      <!-- IPHONE -->
+      <!-- ═══════════════════════════════════════
+           IPHONE / iOS
+           ═══════════════════════════════════════ -->
       <div class="tab-panel active" data-panel="iphone">
         <div class="detail-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 8v8M8 12h8"/>
           </svg>
-          <span data-i18n="ip.title">iPhone / iCloud</span>
+          <span data-i18n="ip.title">iPhone / iOS</span>
         </div>
-        <div class="detail-sub" data-i18n="ip.sub">check iCloud Lock, Find My iPhone, IMEI</div>
+        <div class="detail-sub" data-i18n="ip.sub">iCloud Lock, Find My iPhone, IMEI, iOS tools</div>
 
-        <div class="info-block" data-i18n-html="ip.info"></div>
-
+        <!-- iCloud check -->
         <div class="section-sub" data-i18n="ip.section1">iCloud check services</div>
         <div class="tool-list">
           <a class="tool-item" href="https://sickw.com/" target="_blank" rel="noopener">
@@ -1320,7 +1412,43 @@ body { overflow-x: hidden; position: relative; }
           </a>
         </div>
 
-        <div class="section-sub" data-i18n="ip.section2">Apple device management</div>
+        <!-- iOS Security -->
+        <div class="section-sub" data-i18n="ip.section.security">iOS security &amp; jailbreak</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://checkra.in/" target="_blank" rel="noopener">
+            <div class="tool-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7l9 5 9-5-9-5z"/><path d="M3 12l9 5 9-5"/></svg></div>
+            <div class="tool-info"><div class="tool-name">checkra1n</div><div class="tool-desc">jailbreak tool · checkm8 exploit</div></div>
+            <span class="tool-badge sec">jb</span>
+          </a>
+          <a class="tool-item" href="https://palera.in/" target="_blank" rel="noopener">
+            <div class="tool-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div class="tool-info"><div class="tool-name">palera1n</div><div class="tool-desc">jailbreak for iOS 15+ checkm8 devices</div></div>
+            <span class="tool-badge sec">jb</span>
+          </a>
+          <a class="tool-item" href="https://unc0ver.dev/" target="_blank" rel="noopener">
+            <div class="tool-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></div>
+            <div class="tool-info"><div class="tool-name">unc0ver</div><div class="tool-desc">jailbreak iOS 11–14</div></div>
+            <span class="tool-badge sec">jb</span>
+          </a>
+          <a class="tool-item" href="https://taurine.app/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4 8l8-6 8 6M4 16l8 6 8-6"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Taurine</div><div class="tool-desc">jailbreak iOS 14 · Sileo</div></div>
+            <span class="tool-badge sec">jb</span>
+          </a>
+          <a class="tool-item" href="https://www.icloud.com/" target="_blank" rel="noopener">
+            <div class="tool-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></div>
+            <div class="tool-info"><div class="tool-name">iCloud Web</div><div class="tool-desc">find my iphone · manage devices</div></div>
+            <span class="tool-badge web">web</span>
+          </a>
+          <a class="tool-item" href="https://support.apple.com/" target="_blank" rel="noopener">
+            <div class="tool-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Apple Support</div><div class="tool-desc">official support page</div></div>
+            <span class="tool-badge ios">official</span>
+          </a>
+        </div>
+
+        <!-- iOS device management -->
+        <div class="section-sub" data-i18n="ip.section2">Device management</div>
         <div class="tool-list">
           <a class="tool-item" href="https://www.apple.com/vn/itunes/" target="_blank" rel="noopener">
             <div class="tool-icon pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
@@ -1329,46 +1457,135 @@ body { overflow-x: hidden; position: relative; }
           </a>
           <a class="tool-item" href="https://imazing.com/" target="_blank" rel="noopener">
             <div class="tool-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 10l3 3 7-7"/></svg></div>
-            <div class="tool-info"><div class="tool-name">iMazing</div><div class="tool-desc">advanced iOS management · backup · transfer</div></div>
+            <div class="tool-info"><div class="tool-name">iMazing</div><div class="tool-desc">advanced iOS management · backup</div></div>
+            <span class="tool-badge win">pc</span>
+          </a>
+          <a class="tool-item" href="https://www.3u.com/" target="_blank" rel="noopener">
+            <div class="tool-icon indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 10h6"/></svg></div>
+            <div class="tool-info"><div class="tool-name">3uTools</div><div class="tool-desc">iPhone management · flash · jailbreak</div></div>
             <span class="tool-badge win">pc</span>
           </a>
         </div>
       </div>
 
-      <!-- ANDROID -->
+      <!-- ═══════════════════════════════════════
+           ANDROID
+           ═══════════════════════════════════════ -->
       <div class="tab-panel" data-panel="android">
         <div class="detail-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
           </svg>
-          <span data-i18n="an.title">Android / FRP</span>
+          <span data-i18n="an.title">Android</span>
         </div>
-        <div class="detail-sub" data-i18n="an.sub">shortcuts, APK and FRP bypass services</div>
+        <div class="detail-sub" data-i18n="an.sub">FRP bypass · shortcuts · APK · tools</div>
 
-        <div class="info-block warning" data-i18n-html="an.warning"></div>
-
-        <div class="section-sub" data-i18n="an.section1">FRP Bypass services</div>
+        <!-- ═ BYPASS — RIÊNG, XẾP ĐẦU ═ -->
+        <div class="section-sub bypass-head" data-i18n="an.bypass.head">▸ BYPASS — FRP Bypass Services</div>
         <div class="tool-list">
           <a class="tool-item" href="https://vnrom.net/bypass/" target="_blank" rel="noopener">
             <div class="tool-icon neon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7l9 5 9-5-9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg></div>
             <div class="tool-info"><div class="tool-name">vnROM Bypass</div><div class="tool-desc">FRP bypass APK · android 2026</div></div>
-            <span class="tool-badge droid">#1</span>
+            <span class="tool-badge bypass">bypass</span>
           </a>
           <a class="tool-item" href="https://frpbypass.romstage.com/vnrom/" target="_blank" rel="noopener">
             <div class="tool-icon sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></div>
             <div class="tool-info"><div class="tool-name">ROMStage FRP</div><div class="tool-desc">vnROM bypass all latest apk</div></div>
-            <span class="tool-badge droid">#2</span>
+            <span class="tool-badge bypass">bypass</span>
+          </a>
+          <a class="tool-item" href="https://addrom.com/bypass/" target="_blank" rel="noopener">
+            <div class="tool-icon neon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <div class="tool-info"><div class="tool-name">AddROM Bypass</div><div class="tool-desc">FRP bypass tools · many brands</div></div>
+            <span class="tool-badge bypass">bypass</span>
+          </a>
+          <a class="tool-item" href="https://bypassfrpfiles.com/" target="_blank" rel="noopener">
+            <div class="tool-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div class="tool-info"><div class="tool-name">BypassFRPFiles</div><div class="tool-desc">FRP bypass files · all brands</div></div>
+            <span class="tool-badge bypass">bypass</span>
           </a>
         </div>
 
+        <div class="info-block bypass">
+          <b>FRP Bypass:</b> Factory Reset Protection. Tools to bypass Google account verification after factory reset.
+        </div>
+
+        <!-- Android shortcuts -->
         <div class="section-sub" data-i18n="an.section2">Android shortcuts</div>
         <div class="shortcut-grid" id="shortcutGrid"></div>
 
+        <!-- Android tools -->
+        <div class="section-sub" data-i18n="an.section.tools">Android tools</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://developer.android.com/studio" target="_blank" rel="noopener">
+            <div class="tool-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9l6 6M15 9l-6 6"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Android Studio</div><div class="tool-desc">official Android IDE · ADB · emulator</div></div>
+            <span class="tool-badge droid">official</span>
+          </a>
+          <a class="tool-item" href="https://frida.re/" target="_blank" rel="noopener">
+            <div class="tool-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Frida</div><div class="tool-desc">dynamic instrumentation · hook app</div></div>
+            <span class="tool-badge droid">tool</span>
+          </a>
+          <a class="tool-item" href="https://github.com/Genymobile/scrcpy" target="_blank" rel="noopener">
+            <div class="tool-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><rect x="9" y="6" width="6" height="10"/></svg></div>
+            <div class="tool-info"><div class="tool-name">scrcpy</div><div class="tool-desc">screen mirror · control android from pc</div></div>
+            <span class="tool-badge droid">tool</span>
+          </a>
+          <a class="tool-item" href="https://apktool.org/" target="_blank" rel="noopener">
+            <div class="tool-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="tool-info"><div class="tool-name">APKTool</div><div class="tool-desc">decode · rebuild APK</div></div>
+            <span class="tool-badge droid">tool</span>
+          </a>
+          <a class="tool-item" href="https://github.com/patrickfav/uber-apk-signer" target="_blank" rel="noopener">
+            <div class="tool-icon indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <div class="tool-info"><div class="tool-name">uber-apk-signer</div><div class="tool-desc">sign APK easily</div></div>
+            <span class="tool-badge droid">tool</span>
+          </a>
+          <a class="tool-item" href="https://www.virustotal.com/" target="_blank" rel="noopener">
+            <div class="tool-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="tool-info"><div class="tool-name">VirusTotal</div><div class="tool-desc">scan APK for malware</div></div>
+            <span class="tool-badge sec">scan</span>
+          </a>
+        </div>
+
+        <!-- Android social -->
+        <div class="section-sub" data-i18n="an.section.social">Social apps (mod/apk)</div>
+        <div class="tool-list">
+          <a class="tool-item" href="https://www.tiktok.com/" target="_blank" rel="noopener">
+            <div class="tool-icon pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+            <div class="tool-info"><div class="tool-name">TikTok</div><div class="tool-desc">video · downloader · mod</div></div>
+            <span class="tool-badge social">social</span>
+          </a>
+          <a class="tool-item" href="https://www.instagram.com/" target="_blank" rel="noopener">
+            <div class="tool-icon pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Instagram</div><div class="tool-desc">photos · reels · stories</div></div>
+            <span class="tool-badge social">social</span>
+          </a>
+          <a class="tool-item" href="https://www.facebook.com/" target="_blank" rel="noopener">
+            <div class="tool-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Facebook</div><div class="tool-desc">social network</div></div>
+            <span class="tool-badge social">social</span>
+          </a>
+          <a class="tool-item" href="https://web.telegram.org/" target="_blank" rel="noopener">
+            <div class="tool-icon sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></div>
+            <div class="tool-info"><div class="tool-name">Telegram</div><div class="tool-desc">messaging · channels</div></div>
+            <span class="tool-badge social">social</span>
+          </a>
+          <a class="tool-item" href="https://www.youtube.com/" target="_blank" rel="noopener">
+            <div class="tool-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-1.92A29 29 0 0023 11.75a29 29 0 00-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg></div>
+            <div class="tool-info"><div class="tool-name">YouTube</div><div class="tool-desc">video platform · vance · revanced</div></div>
+            <span class="tool-badge social">social</span>
+          </a>
+        </div>
+
+        <!-- Android APK reference -->
         <div class="section-sub rare" data-i18n="an.section3">APK reference — not direct download</div>
         <div class="apk-list" id="apkList"></div>
       </div>
 
-      <!-- WINDOWS -->
+      <!-- ═══════════════════════════════════════
+           WINDOWS
+           ═══════════════════════════════════════ -->
       <div class="tab-panel" data-panel="windows">
         <div class="detail-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1379,6 +1596,7 @@ body { overflow-x: hidden; position: relative; }
         </div>
         <div class="detail-sub" data-i18n="win.sub">browser, VPN, utilities, drivers and tools</div>
 
+        <!-- Browsers -->
         <div class="section-sub" data-i18n="win.sec.browsers">Web browsers</div>
         <div class="tool-list">
           <a class="tool-item" href="https://www.google.com/intl/vi_vn/chrome/" target="_blank" rel="noopener">
@@ -1398,11 +1616,12 @@ body { overflow-x: hidden; position: relative; }
           </a>
           <a class="tool-item" href="https://coccoc.com/" target="_blank" rel="noopener">
             <div class="tool-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 010 20"/></svg></div>
-            <div class="tool-info"><div class="tool-name">Cốc Cốc</div><div class="tool-desc">vietnamese browser · fast</div></div>
+            <div class="tool-info"><div class="tool-name">Cốc Cốc</div><div class="tool-desc">vietnamese browser</div></div>
             <span class="tool-badge win">win</span>
           </a>
         </div>
 
+        <!-- VPN -->
         <div class="section-sub" data-i18n="win.sec.vpn">VPN &amp; security</div>
         <div class="tool-list">
           <a class="tool-item" href="https://protonvpn.com/download" target="_blank" rel="noopener">
@@ -1427,6 +1646,7 @@ body { overflow-x: hidden; position: relative; }
           </a>
         </div>
 
+        <!-- Utilities -->
         <div class="section-sub" data-i18n="win.sec.utils">Utilities</div>
         <div class="tool-list">
           <a class="tool-item" href="https://www.capcut.com/" target="_blank" rel="noopener">
@@ -1451,13 +1671,9 @@ body { overflow-x: hidden; position: relative; }
           </a>
         </div>
 
+        <!-- Emulators -->
         <div class="section-sub" data-i18n="win.sec.emulators">Android emulators</div>
         <div class="tool-list">
-          <a class="tool-item" href="https://www.3u.com/" target="_blank" rel="noopener">
-            <div class="tool-icon indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 10h6"/></svg></div>
-            <div class="tool-info"><div class="tool-name">3uTools</div><div class="tool-desc">iPhone management · flash · jailbreak</div></div>
-            <span class="tool-badge win">win</span>
-          </a>
           <a class="tool-item" href="https://www.ldplayer.net/" target="_blank" rel="noopener">
             <div class="tool-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="10" r="3"/></svg></div>
             <div class="tool-info"><div class="tool-name">LDPlayer</div><div class="tool-desc">android emulator for pc · gaming</div></div>
@@ -1470,6 +1686,7 @@ body { overflow-x: hidden; position: relative; }
           </a>
         </div>
 
+        <!-- Drivers -->
         <div class="section-sub" data-i18n="win.sec.drivers">Network drivers</div>
         <div class="tool-list">
           <a class="tool-item" href="https://www.intel.vn/content/www/vn/vi/download/18293/intel-network-adapter-driver-for-windows-10.html" target="_blank" rel="noopener">
@@ -1484,6 +1701,7 @@ body { overflow-x: hidden; position: relative; }
           </a>
         </div>
 
+        <!-- Author -->
         <div class="section-sub rare" data-i18n="win.sec.author">Author tools</div>
         <div class="tool-list">
           <a class="tool-item" href="https://ngthanhdiem.github.io" target="_blank" rel="noopener">
@@ -1505,6 +1723,16 @@ body { overflow-x: hidden; position: relative; }
 
         <div class="section-sub rare" data-i18n="win.sec.exe">EXE tools — reference</div>
         <div class="apk-list" id="exeList"></div>
+      </div>
+
+      <!-- CHANGELOG -->
+      <div class="changelog">
+        <div class="changelog-title" data-i18n="changelog.title">Changelog</div>
+        <ul>
+          <li data-i18n-html="changelog.v1"><b>v2.1</b> — Added language switcher, Termux downloader, bypass section, security tools</li>
+          <li data-i18n-html="changelog.v2"><b>v2.0</b> — Multi-language (EN/VI/ZH/AR), new design</li>
+          <li data-i18n-html="changelog.v3"><b>v1.0</b> — Initial release with iPhone, Android, Windows</li>
+        </ul>
       </div>
 
       <div class="credit">
@@ -1560,20 +1788,25 @@ body { overflow-x: hidden; position: relative; }
   <footer class="footer">
     <div class="footer-links">
       <a class="footer-link" href="https://t.me/ThanhDiemX" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
         <span>@ThanhDiemX</span>
       </a>
       <a class="footer-link" href="https://thanhdiem.pages.dev" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
         <span>thanhdiem.pages.dev</span>
+      </a>
+      <a class="footer-link" href="https://ngthanhdiem.github.io" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+        <span>github.io</span>
       </a>
     </div>
     <div class="footer-credit">// Nguyen Thanh Diem · 2026</div>
+    <div class="footer-meta">
+      <span>v2.1</span>
+      <span>bypass hub</span>
+      <span>multi-platform</span>
+      <span>secure</span>
+    </div>
   </footer>
 </main>
 
@@ -1586,9 +1819,7 @@ body { overflow-x: hidden; position: relative; }
       </div>
       <div class="termux-bar-right">
         <button class="termux-close" id="termuxClose" title="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </div>
@@ -1608,31 +1839,32 @@ const I18N = {
   en: {
     "welcome.header": "system.init",
     "welcome.title": "Welcome to ThanhDiem Hub",
-    "welcome.text": "<p><span class='prompt'>$</span>Multi-platform toolkit: <b>iPhone</b>, <b>Android</b>, <b>Windows</b>, <b>Termux</b>.</p><p><span class='prompt'>$</span>Tools are provided for research and recovery of devices you <b>legally own</b>. Use at your own risk.</p><p><span class='prompt'>$</span>Click <b>AGREE</b> to continue.</p>",
+    "welcome.text": "<p><span class='prompt'>$</span>Multi-platform <b>bypass</b> and utility toolkit.</p><p><span class='prompt'>$</span>Tools for research and recovery of devices you <b>legally own</b>. Use at your own risk.</p><p><span class='prompt'>$</span>Click <b>AGREE</b> to continue.</p>",
     "welcome.agree": "Agree",
-    "brand.tag": "// multi-platform toolkit",
+    "brand.tag": "// bypass & multi-platform toolkit",
+    "stat.bypass": "Bypass", "stat.icloud": "iCloud", "stat.shortcuts": "Shortcuts", "stat.tools": "Tools",
     "disclaimer.text": "<b>Disclaimer.</b> Tools are aggregated for research and recovery of devices you legally own. We are not responsible for any misuse.",
     "head.title": "Tool Center",
     "head.sub": "// pick a platform below",
-    "launch.iphone.title": "iPhone / iCloud",
-    "launch.iphone.desc": "check iCloud · FMI · IMEI",
+    "launch.iphone.title": "iPhone / iOS",
+    "launch.iphone.desc": "iCloud · iOS tools · security",
     "launch.android.title": "Android",
-    "launch.android.desc": "FRP · shortcuts · APK",
+    "launch.android.desc": "FRP · shortcuts · APK · social",
     "launch.windows.title": "Windows",
     "launch.windows.desc": "browser · VPN · driver · tool",
-    "tab.iphone": "iPhone",
-    "tab.android": "Android",
-    "tab.windows": "Windows",
-    "ip.title": "iPhone / iCloud",
-    "ip.sub": "check iCloud Lock, Find My iPhone, IMEI",
-    "ip.info": "<b>iCloud Lock</b> is Apple's security feature. The device is locked to the previous owner's Apple ID if Find My iPhone hasn't been disabled.<ul><li><b>iCloud ON</b> — device is locked.</li><li><b>iCloud OFF</b> — safe to buy.</li></ul>",
+    "launch.termux.desc": "terminal · tiktok downloader",
+    "tab.iphone": "iPhone", "tab.android": "Android", "tab.windows": "Windows",
+    "ip.title": "iPhone / iOS",
+    "ip.sub": "iCloud Lock, Find My iPhone, IMEI, iOS tools",
     "ip.section1": "iCloud check services",
-    "ip.section2": "Apple device management",
-    "an.title": "Android / FRP",
-    "an.sub": "shortcuts, APK and FRP bypass services",
-    "an.warning": "<b>Warning:</b> Shortcuts only work on <b>Chrome Android</b> when the device is FRP-locked.",
-    "an.section1": "FRP Bypass services",
+    "ip.section.security": "iOS security & jailbreak",
+    "ip.section2": "Device management",
+    "an.title": "Android",
+    "an.sub": "FRP bypass · shortcuts · APK · tools",
+    "an.bypass.head": "▸ BYPASS — FRP Bypass Services",
     "an.section2": "Android shortcuts",
+    "an.section.tools": "Android tools",
+    "an.section.social": "Social apps (mod/apk)",
     "an.section3": "APK reference — not direct download",
     "win.title": "Windows",
     "win.sub": "browser, VPN, utilities, drivers and tools",
@@ -1643,7 +1875,11 @@ const I18N = {
     "win.sec.drivers": "Network drivers",
     "win.sec.author": "Author tools",
     "win.sec.exe": "EXE tools — reference",
-    "credit.text": "<b>ThanhDiem Hub</b> · Curated by <b>Nguyen Thanh Diem</b>. Shortcuts, APK and EXE aggregated from vnrom.net and public sources.",
+    "changelog.title": "Changelog",
+    "changelog.v1": "<b>v2.1</b> — Language switcher, Termux, bypass section, security tools",
+    "changelog.v2": "<b>v2.0</b> — Multi-language (EN/VI/ZH/AR), new design",
+    "changelog.v3": "<b>v1.0</b> — Initial release",
+    "credit.text": "<b>ThanhDiem Hub</b> · Curated by <b>Nguyen Thanh Diem</b>. Shortcuts, APK and EXE from vnrom.net and public sources.",
     "policy.title": "Policy & Security",
     "policy.sub": "terms of use, privacy policy, data regulations",
     "policy.p1.title": "Privacy policy",
@@ -1656,33 +1892,34 @@ const I18N = {
     "policy.p4.text": "This site links to third-party services. We <b>do not control</b> their content, policies or safety."
   },
   vi: {
-    "welcome.header": "system.init",
+    "welcome.header": "khởi tạo",
     "welcome.title": "Chào mừng tới ThanhDiem Hub",
-    "welcome.text": "<p><span class='prompt'>$</span>Bộ công cụ đa nền tảng: <b>iPhone</b>, <b>Android</b>, <b>Windows</b>, <b>Termux</b>.</p><p><span class='prompt'>$</span>Công cụ dành cho nghiên cứu và khôi phục thiết bị bạn <b>sở hữu hợp pháp</b>. Tự chịu trách nhiệm khi dùng.</p><p><span class='prompt'>$</span>Bấm <b>ĐỒNG Ý</b> để tiếp tục.</p>",
+    "welcome.text": "<p><span class='prompt'>$</span>Bộ công cụ <b>bypass</b> và tiện ích đa nền tảng.</p><p><span class='prompt'>$</span>Công cụ dành cho nghiên cứu và khôi phục thiết bị bạn <b>sở hữu hợp pháp</b>. Tự chịu trách nhiệm.</p><p><span class='prompt'>$</span>Bấm <b>ĐỒNG Ý</b> để tiếp tục.</p>",
     "welcome.agree": "Đồng ý",
-    "brand.tag": "// bộ công cụ đa nền tảng",
-    "disclaimer.text": "<b>Miễn trừ trách nhiệm.</b> Công cụ được tổng hợp cho nghiên cứu và khôi phục thiết bị bạn sở hữu hợp pháp. Chúng tôi không chịu trách nhiệm cho bất kỳ hành vi lạm dụng nào.",
+    "brand.tag": "// bộ công cụ bypass & đa nền tảng",
+    "stat.bypass": "Bypass", "stat.icloud": "iCloud", "stat.shortcuts": "Shortcuts", "stat.tools": "Công cụ",
+    "disclaimer.text": "<b>Miễn trừ trách nhiệm.</b> Công cụ tổng hợp cho nghiên cứu và khôi phục thiết bị bạn sở hữu hợp pháp. Không chịu trách nhiệm cho hành vi lạm dụng.",
     "head.title": "Trung tâm công cụ",
     "head.sub": "// chọn một nền tảng bên dưới",
-    "launch.iphone.title": "iPhone / iCloud",
-    "launch.iphone.desc": "check iCloud · FMI · IMEI",
+    "launch.iphone.title": "iPhone / iOS",
+    "launch.iphone.desc": "iCloud · iOS tools · bảo mật",
     "launch.android.title": "Android",
-    "launch.android.desc": "FRP · shortcuts · APK",
+    "launch.android.desc": "FRP · shortcuts · APK · social",
     "launch.windows.title": "Windows",
     "launch.windows.desc": "trình duyệt · VPN · driver · tool",
-    "tab.iphone": "iPhone",
-    "tab.android": "Android",
-    "tab.windows": "Windows",
-    "ip.title": "iPhone / iCloud",
-    "ip.sub": "kiểm tra iCloud Lock, Find My iPhone, IMEI",
-    "ip.info": "<b>iCloud Lock</b> là tính năng bảo mật của Apple. Thiết bị bị khóa vào Apple ID chủ cũ nếu Find My iPhone chưa tắt.<ul><li><b>iCloud ON</b> — thiết bị đang bị khóa.</li><li><b>iCloud OFF</b> — an toàn để mua.</li></ul>",
+    "launch.termux.desc": "terminal · tiktok downloader",
+    "tab.iphone": "iPhone", "tab.android": "Android", "tab.windows": "Windows",
+    "ip.title": "iPhone / iOS",
+    "ip.sub": "iCloud Lock, Find My iPhone, IMEI, iOS tools",
     "ip.section1": "Dịch vụ check iCloud",
-    "ip.section2": "Quản lý thiết bị Apple",
-    "an.title": "Android / FRP",
-    "an.sub": "shortcuts, APK và dịch vụ bypass FRP",
-    "an.warning": "<b>Cảnh báo:</b> Shortcuts chỉ hoạt động trên <b>Chrome Android</b> khi thiết bị bị khóa FRP.",
-    "an.section1": "Dịch vụ Bypass FRP",
+    "ip.section.security": "Bảo mật iOS & jailbreak",
+    "ip.section2": "Quản lý thiết bị",
+    "an.title": "Android",
+    "an.sub": "Bypass FRP · shortcuts · APK · tools",
+    "an.bypass.head": "▸ BYPASS — Dịch vụ Bypass FRP",
     "an.section2": "Shortcuts Android",
+    "an.section.tools": "Công cụ Android",
+    "an.section.social": "Mạng xã hội (mod/apk)",
     "an.section3": "APK tham khảo — không tải trực tiếp",
     "win.title": "Windows",
     "win.sub": "trình duyệt, VPN, tiện ích, driver và công cụ",
@@ -1693,13 +1930,17 @@ const I18N = {
     "win.sec.drivers": "Driver mạng",
     "win.sec.author": "Công cụ tác giả",
     "win.sec.exe": "EXE tham khảo",
-    "credit.text": "<b>ThanhDiem Hub</b> · Tổng hợp bởi <b>Nguyen Thanh Diem</b>. Shortcuts, APK và EXE tổng hợp từ vnrom.net và nguồn công khai.",
+    "changelog.title": "Lịch sử cập nhật",
+    "changelog.v1": "<b>v2.1</b> — Đổi ngôn ngữ, Termux, mục bypass, công cụ bảo mật",
+    "changelog.v2": "<b>v2.0</b> — Đa ngôn ngữ (EN/VI/ZH/AR), thiết kế mới",
+    "changelog.v3": "<b>v1.0</b> — Bản đầu tiên",
+    "credit.text": "<b>ThanhDiem Hub</b> · Tổng hợp bởi <b>Nguyen Thanh Diem</b>. Shortcuts, APK và EXE từ vnrom.net và nguồn công khai.",
     "policy.title": "Chính sách & Bảo mật",
     "policy.sub": "điều khoản sử dụng, chính sách bảo mật, quy định dữ liệu",
     "policy.p1.title": "Chính sách bảo mật",
-    "policy.p1.text": "Trang này <b>không thu thập dữ liệu cá nhân</b>, không lưu log, không dùng cookie theo dõi. Khi mở dịch vụ bên ngoài, chính sách của họ áp dụng.",
+    "policy.p1.text": "Trang này <b>không thu thập dữ liệu cá nhân</b>, không log, không cookie theo dõi.",
     "policy.p2.title": "Điều khoản sử dụng",
-    "policy.p2.text": "<ul><li>Chỉ dùng cho nghiên cứu và khôi phục thiết bị bạn sở hữu hợp pháp.</li><li>Không dùng để bypass thiết bị không thuộc quyền sở hữu của bạn.</li><li>Tự chịu trách nhiệm pháp lý với hành vi của mình.</li><li>Chúng tôi không chịu trách nhiệm cho bất kỳ thiệt hại nào.</li></ul>",
+    "policy.p2.text": "<ul><li>Chỉ dùng cho nghiên cứu và khôi phục thiết bị bạn sở hữu hợp pháp.</li><li>Không dùng để bypass thiết bị không thuộc quyền sở hữu.</li><li>Tự chịu trách nhiệm pháp lý với hành vi của mình.</li><li>Chúng tôi không chịu trách nhiệm cho bất kỳ thiệt hại nào.</li></ul>",
     "policy.p3.title": "Miễn trừ trách nhiệm",
     "policy.p3.text": "Tất cả nội dung, shortcuts, APK, EXE và hướng dẫn cung cấp <b>\"nguyên trạng\"</b>, không bảo hành.",
     "policy.p4.title": "Bên thứ ba",
@@ -1708,31 +1949,32 @@ const I18N = {
   zh: {
     "welcome.header": "系统初始化",
     "welcome.title": "欢迎来到 ThanhDiem Hub",
-    "welcome.text": "<p><span class='prompt'>$</span>多平台工具箱：<b>iPhone</b>、<b>Android</b>、<b>Windows</b>、<b>Termux</b>。</p><p><span class='prompt'>$</span>工具仅用于研究和恢复您<b>合法拥有</b>的设备。使用风险自负。</p><p><span class='prompt'>$</span>点击<b>同意</b>继续。</p>",
+    "welcome.text": "<p><span class='prompt'>$</span>多平台 <b>绕过</b> 和实用工具集。</p><p><span class='prompt'>$</span>工具用于研究和恢复您<b>合法拥有</b>的设备。使用风险自负。</p><p><span class='prompt'>$</span>点击<b>同意</b>继续。</p>",
     "welcome.agree": "同意",
-    "brand.tag": "// 多平台工具箱",
+    "brand.tag": "// 绕过与多平台工具箱",
+    "stat.bypass": "绕过", "stat.icloud": "iCloud", "stat.shortcuts": "快捷方式", "stat.tools": "工具",
     "disclaimer.text": "<b>免责声明。</b>工具汇总用于研究和恢复您合法拥有的设备。我们不对任何滥用负责。",
     "head.title": "工具中心",
     "head.sub": "// 选择下面的平台",
-    "launch.iphone.title": "iPhone / iCloud",
-    "launch.iphone.desc": "检查 iCloud · FMI · IMEI",
+    "launch.iphone.title": "iPhone / iOS",
+    "launch.iphone.desc": "iCloud · iOS 工具 · 安全",
     "launch.android.title": "Android",
-    "launch.android.desc": "FRP · 快捷方式 · APK",
+    "launch.android.desc": "FRP · 快捷方式 · APK · 社交",
     "launch.windows.title": "Windows",
     "launch.windows.desc": "浏览器 · VPN · 驱动 · 工具",
-    "tab.iphone": "iPhone",
-    "tab.android": "Android",
-    "tab.windows": "Windows",
-    "ip.title": "iPhone / iCloud",
-    "ip.sub": "检查 iCloud Lock、查找我的 iPhone、IMEI",
-    "ip.info": "<b>iCloud Lock</b> 是 Apple 的安全功能。如果未禁用查找我的 iPhone，设备将锁定到前所有者的 Apple ID。<ul><li><b>iCloud ON</b> — 设备已锁定。</li><li><b>iCloud OFF</b> — 可以安全购买。</li></ul>",
+    "launch.termux.desc": "终端 · tiktok 下载器",
+    "tab.iphone": "iPhone", "tab.android": "Android", "tab.windows": "Windows",
+    "ip.title": "iPhone / iOS",
+    "ip.sub": "iCloud Lock、查找我的 iPhone、IMEI、iOS 工具",
     "ip.section1": "iCloud 检查服务",
-    "ip.section2": "Apple 设备管理",
-    "an.title": "Android / FRP",
-    "an.sub": "快捷方式、APK 和 FRP 绕过服务",
-    "an.warning": "<b>警告：</b>快捷方式仅在设备处于 FRP 锁定时在 <b>Chrome Android</b> 上有效。",
-    "an.section1": "FRP 绕过服务",
+    "ip.section.security": "iOS 安全与越狱",
+    "ip.section2": "设备管理",
+    "an.title": "Android",
+    "an.sub": "FRP 绕过 · 快捷方式 · APK · 工具",
+    "an.bypass.head": "▸ 绕过 — FRP 绕过服务",
     "an.section2": "Android 快捷方式",
+    "an.section.tools": "Android 工具",
+    "an.section.social": "社交应用 (mod/apk)",
     "an.section3": "APK 参考 — 不直接下载",
     "win.title": "Windows",
     "win.sub": "浏览器、VPN、实用工具、驱动和工具",
@@ -1743,49 +1985,54 @@ const I18N = {
     "win.sec.drivers": "网络驱动",
     "win.sec.author": "作者工具",
     "win.sec.exe": "EXE 工具 — 参考",
+    "changelog.title": "更新日志",
+    "changelog.v1": "<b>v2.1</b> — 语言切换、Termux、绕过部分、安全工具",
+    "changelog.v2": "<b>v2.0</b> — 多语言 (EN/VI/ZH/AR)、新设计",
+    "changelog.v3": "<b>v1.0</b> — 首次发布",
     "credit.text": "<b>ThanhDiem Hub</b> · 由 <b>Nguyen Thanh Diem</b> 整理。快捷方式、APK 和 EXE 来自 vnrom.net 和公开来源。",
     "policy.title": "政策与安全",
     "policy.sub": "使用条款、隐私政策、数据法规",
     "policy.p1.title": "隐私政策",
-    "policy.p1.text": "本站<b>不收集个人数据</b>，无访问日志，无跟踪 cookie。当您打开第三方服务时，其政策适用。",
+    "policy.p1.text": "本站<b>不收集个人数据</b>，无访问日志，无跟踪 cookie。",
     "policy.p2.title": "使用条款",
     "policy.p2.text": "<ul><li>仅将工具用于研究和恢复您合法拥有的设备。</li><li>不要用于绕过不属于您的设备。</li><li>您对自己行为的法律后果负责。</li><li>我们对使用造成的任何损害概不负责。</li></ul>",
     "policy.p3.title": "免责声明",
-    "policy.p3.text": "所有内容、快捷方式、APK、EXE 文件和指南均<b>\"按原样\"</b>提供，不附带任何保证。",
+    "policy.p3.text": "所有内容、快捷方式、APK、EXE 文件和指南均<b>\"按原样\"</b>提供。",
     "policy.p4.title": "第三方",
     "policy.p4.text": "本站链接到第三方服务。我们<b>不控制</b>其内容、政策或安全性。"
   },
   ar: {
     "welcome.header": "تهيئة النظام",
     "welcome.title": "مرحبًا بك في ThanhDiem Hub",
-    "welcome.text": "<p><span class='prompt'>$</span>مجموعة أدوات متعددة المنصات: <b>iPhone</b>، <b>Android</b>، <b>Windows</b>، <b>Termux</b>.</p><p><span class='prompt'>$</span>الأدوات مخصصة للبحث واستعادة الأجهزة التي <b>تملكها قانونيًا</b>. استخدمها على مسؤوليتك.</p><p><span class='prompt'>$</span>اضغط <b>موافق</b> للمتابعة.</p>",
+    "welcome.text": "<p><span class='prompt'>$</span>مجموعة أدوات <b>تجاوز</b> متعددة المنصات.</p><p><span class='prompt'>$</span>الأدوات مخصصة للبحث واستعادة الأجهزة التي <b>تملكها قانونيًا</b>. استخدمها على مسؤوليتك.</p><p><span class='prompt'>$</span>اضغط <b>موافق</b> للمتابعة.</p>",
     "welcome.agree": "موافق",
-    "brand.tag": "// أدوات متعددة المنصات",
-    "disclaimer.text": "<b>إخلاء المسؤولية.</b> الأدوات مجمعة للبحث واستعادة الأجهزة التي تملكها قانونيًا. لسنا مسؤولين عن أي إساءة استخدام.",
+    "brand.tag": "// تجاوز وأدوات متعددة المنصات",
+    "stat.bypass": "تجاوز", "stat.icloud": "iCloud", "stat.shortcuts": "اختصارات", "stat.tools": "أدوات",
+    "disclaimer.text": "<b>إخلاء المسؤولية.</b> الأدوات مجمعة للبحث واستعادة الأجهزة التي تملكها قانونيًا.",
     "head.title": "مركز الأدوات",
     "head.sub": "// اختر منصة أدناه",
-    "launch.iphone.title": "iPhone / iCloud",
-    "launch.iphone.desc": "فحص iCloud · FMI · IMEI",
+    "launch.iphone.title": "iPhone / iOS",
+    "launch.iphone.desc": "iCloud · أدوات iOS · أمان",
     "launch.android.title": "Android",
-    "launch.android.desc": "FRP · اختصارات · APK",
+    "launch.android.desc": "FRP · اختصارات · APK · اجتماعي",
     "launch.windows.title": "Windows",
     "launch.windows.desc": "متصفح · VPN · تعريف · أداة",
-    "tab.iphone": "iPhone",
-    "tab.android": "Android",
-    "tab.windows": "Windows",
-    "ip.title": "iPhone / iCloud",
-    "ip.sub": "فحص iCloud Lock، Find My iPhone، IMEI",
-    "ip.info": "<b>iCloud Lock</b> هي ميزة أمان من Apple. يتم قفل الجهاز على Apple ID للمالك السابق إذا لم يتم تعطيل Find My iPhone.<ul><li><b>iCloud ON</b> — الجهاز مقفل.</li><li><b>iCloud OFF</b> — آمن للشراء.</li></ul>",
+    "launch.termux.desc": "طرفية · تحميل tiktok",
+    "tab.iphone": "iPhone", "tab.android": "Android", "tab.windows": "Windows",
+    "ip.title": "iPhone / iOS",
+    "ip.sub": "فحص iCloud، Find My iPhone، IMEI، أدوات iOS",
     "ip.section1": "خدمات فحص iCloud",
-    "ip.section2": "إدارة أجهزة Apple",
-    "an.title": "Android / FRP",
-    "an.sub": "اختصارات، APK وخدمات تجاوز FRP",
-    "an.warning": "<b>تحذير:</b> الاختصارات تعمل فقط على <b>Chrome Android</b> عندما يكون الجهاز مقفل بـ FRP.",
-    "an.section1": "خدمات تجاوز FRP",
+    "ip.section.security": "أمان iOS & jailbreak",
+    "ip.section2": "إدارة الأجهزة",
+    "an.title": "Android",
+    "an.sub": "تجاوز FRP · اختصارات · APK · أدوات",
+    "an.bypass.head": "▸ تجاوز — خدمات تجاوز FRP",
     "an.section2": "اختصارات Android",
+    "an.section.tools": "أدوات Android",
+    "an.section.social": "تطبيقات اجتماعية (mod/apk)",
     "an.section3": "مرجع APK — لا يتم التنزيل مباشرة",
     "win.title": "Windows",
-    "win.sub": "متصفح، VPN، أدوات، تعريفات وأدوات",
+    "win.sub": "متصفح، VPN، أدوات، تعريفات",
     "win.sec.browsers": "متصفحات الويب",
     "win.sec.vpn": "VPN والأمان",
     "win.sec.utils": "أدوات مساعدة",
@@ -1793,19 +2040,32 @@ const I18N = {
     "win.sec.drivers": "تعريفات الشبكة",
     "win.sec.author": "أدوات المؤلف",
     "win.sec.exe": "أدوات EXE — مرجع",
-    "credit.text": "<b>ThanhDiem Hub</b> · من إعداد <b>Nguyen Thanh Diem</b>. الاختصارات و APK و EXE مجمعة من vnrom.net ومصادر عامة.",
+    "changelog.title": "سجل التغييرات",
+    "changelog.v1": "<b>v2.1</b> — مبدل اللغة، Termux، قسم التجاوز، أدوات الأمان",
+    "changelog.v2": "<b>v2.0</b> — متعدد اللغات، تصميم جديد",
+    "changelog.v3": "<b>v1.0</b> — الإصدار الأول",
+    "credit.text": "<b>ThanhDiem Hub</b> · من إعداد <b>Nguyen Thanh Diem</b>.",
     "policy.title": "السياسة والأمان",
     "policy.sub": "شروط الاستخدام، سياسة الخصوصية، لوائح البيانات",
     "policy.p1.title": "سياسة الخصوصية",
-    "policy.p1.text": "هذا الموقع <b>لا يجمع بيانات شخصية</b>، لا سجلات وصول، لا ملفات تعريف ارتباط للتتبع.",
+    "policy.p1.text": "هذا الموقع <b>لا يجمع بيانات شخصية</b>.",
     "policy.p2.title": "شروط الاستخدام",
-    "policy.p2.text": "<ul><li>استخدم الأدوات فقط للبحث واستعادة الأجهزة التي تملكها قانونيًا.</li><li>لا تستخدمها لتجاوز الأجهزة التي لا تملكها.</li><li>أنت مسؤول قانونيًا عن أفعالك.</li><li>لسنا مسؤولين عن أي أضرار ناتجة عن الاستخدام.</li></ul>",
+    "policy.p2.text": "<ul><li>استخدم الأدوات فقط للبحث واستعادة الأجهزة التي تملكها قانونيًا.</li><li>لا تستخدمها لتجاوز الأجهزة التي لا تملكها.</li><li>أنت مسؤول قانونيًا عن أفعالك.</li></ul>",
     "policy.p3.title": "إخلاء المسؤولية",
-    "policy.p3.text": "جميع المحتويات والاختصارات وملفات APK و EXE والأدلة مقدمة <b>\"كما هي\"</b>، بدون أي ضمان.",
+    "policy.p3.text": "جميع المحتويات مقدمة <b>\"كما هي\"</b>، بدون أي ضمان.",
     "policy.p4.title": "أطراف ثالثة",
-    "policy.p4.text": "هذا الموقع يحتوي على روابط لخدمات طرف ثالث. نحن <b>لا نتحكم</b> في محتواها أو سياساتها أو أمانها."
+    "policy.p4.text": "هذا الموقع يحتوي على روابط لخدمات طرف ثالث. نحن <b>لا نتحكم</b> في محتواها."
   }
 };
+
+const LANG_META = {
+  en: { flag: "🇺🇸", label: "EN" },
+  vi: { flag: "🇻🇳", label: "VI" },
+  zh: { flag: "🇨🇳", label: "ZH" },
+  ar: { flag: "🇸🇦", label: "AR" }
+};
+
+let currentLang = "en";
 
 function t(key, lang) {
   const l = lang || currentLang;
@@ -1826,9 +2086,16 @@ function applyLang(lang) {
     el.innerHTML = t(key, lang);
   });
 
-  // welcome text
   const wt = document.getElementById("welcomeText");
   if (wt) wt.innerHTML = t("welcome.text", lang);
+
+  const meta = LANG_META[lang] || LANG_META.en;
+  document.getElementById("currentFlag").textContent = meta.flag;
+  document.getElementById("currentLangLabel").textContent = meta.label;
+
+  document.querySelectorAll(".lang-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.lang === lang);
+  });
 }
 
 function setLangCookie(lang) {
@@ -1842,46 +2109,39 @@ function getLangCookie() {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-let currentLang = "en";
-
-/* LANGUAGE SELECTOR LOGIC */
-const langOverlay = document.getElementById("langOverlay");
-const welcomeOverlay = document.getElementById("welcomeOverlay");
-
-document.querySelectorAll(".lang-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const lang = btn.dataset.lang;
+/* LANG UI */
+const langMenu = document.getElementById("langMenu");
+document.getElementById("btnLang").addEventListener("click", (e) => {
+  e.stopPropagation();
+  langMenu.classList.toggle("show");
+});
+document.addEventListener("click", (e) => {
+  if (!langMenu.contains(e.target) && !e.target.closest("#btnLang")) {
+    langMenu.classList.remove("show");
+  }
+});
+document.querySelectorAll(".lang-item").forEach(el => {
+  el.addEventListener("click", () => {
+    const lang = el.dataset.lang;
     setLangCookie(lang);
     applyLang(lang);
-    langOverlay.classList.remove("show");
-    setTimeout(() => {
-      langOverlay.style.display = "none";
-      // show welcome after lang selection
-      welcomeOverlay.classList.add("show");
-    }, 400);
+    langMenu.classList.remove("show");
   });
 });
 
-/* INIT LANGUAGE */
-(function initLang() {
-  const saved = getLangCookie();
-  if (saved && I18N[saved]) {
-    applyLang(saved);
-    // skip language selector, go straight to welcome
-    langOverlay.style.display = "none";
-    welcomeOverlay.classList.add("show");
-  } else {
-    langOverlay.classList.add("show");
-  }
-})();
-
 /* WELCOME */
+const welcomeOverlay = document.getElementById("welcomeOverlay");
 document.getElementById("btnWelcomeAgree").addEventListener("click", () => {
   welcomeOverlay.classList.add("hide");
-  setTimeout(() => {
-    welcomeOverlay.style.display = "none";
-  }, 500);
+  setTimeout(() => { welcomeOverlay.style.display = "none"; }, 500);
 });
+
+/* INIT */
+(function init() {
+  const saved = getLangCookie() || "en";
+  applyLang(saved);
+  welcomeOverlay.classList.add("show");
+})();
 
 /* MATRIX */
 (function initMatrix() {
@@ -1922,7 +2182,7 @@ document.getElementById("btnWelcomeAgree").addEventListener("click", () => {
   requestAnimationFrame(loop);
 })();
 
-/* SHORTCUTS */
+/* SHORTCUTS DATA */
 const SHORTCUTS = [
   { name: "Galaxy Store",           desc: "open galaxy store",           href: "intent://com.sec.android.app.samsungapps/#Intent;scheme=android-app;end", icon: "gallery" },
   { name: "Quick Search Box",       desc: "open google quick search",    href: "intent://com.google.android.googlequicksearchbox/#Intent;scheme=android-app;end", icon: "search" },
@@ -2011,15 +2271,8 @@ const ICONS = {
     a.className = "shortcut-item";
     a.href = s.href;
     a.innerHTML = `
-      <div class="shortcut-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          ${ICONS[s.icon] || ICONS.settings}
-        </svg>
-      </div>
-      <div class="shortcut-info">
-        <div class="shortcut-name">${s.name}</div>
-        <div class="shortcut-desc">${s.desc}</div>
-      </div>
+      <div class="shortcut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[s.icon] || ICONS.settings}</svg></div>
+      <div class="shortcut-info"><div class="shortcut-name">${s.name}</div><div class="shortcut-desc">${s.desc}</div></div>
       <span class="shortcut-badge">${s.ussd ? "ussd" : "open"}</span>
     `;
     grid.appendChild(a);
@@ -2035,13 +2288,7 @@ const ICONS = {
     const el = document.createElement("div");
     el.className = "apk-item";
     el.innerHTML = `
-      <div class="apk-icon ${isXml ? "xml" : ""}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          ${isXml
-            ? '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>'
-            : '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>'}
-        </svg>
-      </div>
+      <div class="apk-icon ${isXml ? "xml" : ""}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${isXml ? '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>' : '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>'}</svg></div>
       <span class="apk-name">${name}</span>
       <span class="apk-note">${isXml ? "xml" : "apk"}</span>
     `;
@@ -2058,12 +2305,7 @@ const ICONS = {
     const el = document.createElement("div");
     el.className = "apk-item";
     el.innerHTML = `
-      <div class="apk-icon exe">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <path d="M8 21h8M12 17v4"/>
-        </svg>
-      </div>
+      <div class="apk-icon exe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
       <span class="apk-name">${name}</span>
       <span class="apk-note">exe</span>
     `;
@@ -2074,78 +2316,26 @@ const ICONS = {
 
 function showFileError(filename) {
   const modal = document.createElement("div");
-  modal.style.cssText = `
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 700;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
-    animation: fadeIn 0.2s cubic-bezier(0.4,0,0.2,1);
-  `;
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:700;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.2s;`;
   modal.innerHTML = `
-    <div style="
-      max-width: 440px; width: 100%;
-      background: rgba(10, 15, 10, 0.98);
-      border: 1px solid rgba(255, 170, 0, 0.3);
-      border-left: 3px solid #ffaa00;
-      border-radius: 10px;
-      padding: 26px;
-      box-shadow: 0 0 40px rgba(255,170,0,0.15), 0 32px 80px rgba(0,0,0,0.85);
-      text-align: center;
-      font-family: var(--font-mono);
-      animation: welcomeIn 0.3s cubic-bezier(0.16,1,0.3,1);
-    ">
-      <div style="
-        width: 52px; height: 52px;
-        margin: 0 auto 14px;
-        border-radius: 50%;
-        background: rgba(255,170,0,0.1);
-        border: 1px solid rgba(255,170,0,0.3);
-        display: grid; place-items: center;
-        color: #ffaa00;
-      ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
+    <div style="max-width:440px;width:100%;background:rgba(10,15,10,0.98);border:1px solid rgba(255,170,0,0.3);border-left:3px solid #ffaa00;border-radius:10px;padding:26px;box-shadow:0 0 40px rgba(255,170,0,0.15),0 32px 80px rgba(0,0,0,0.85);text-align:center;font-family:var(--font-mono);">
+      <div style="width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);display:grid;place-items:center;color:#ffaa00;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </div>
       <div style="font-size:14px;font-weight:700;color:#ffaa00;margin-bottom:10px;letter-spacing:0.1em;text-transform:uppercase">// file.unavailable</div>
-      <div style="font-size:12px;color:#6b9b6b;line-height:1.6;margin-bottom:6px">
-        <code style="font-family:var(--font-mono);font-size:11px;padding:3px 7px;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.2);border-radius:4px;color:#ffbb33">${filename}</code>
-      </div>
-      <div style="font-size:11.5px;color:#6b9b6b;line-height:1.65;margin-bottom:18px">
-        Only <b style="color:#d8ffd8">shortcuts</b> are functional. APK / EXE are reference lists.
-      </div>
-      <button class="modal-close" style="
-        padding: 10px 22px;
-        background: linear-gradient(135deg, #00ff66, #00d9ff);
-        color: #000; border: none;
-        border-radius: 8px;
-        font-size: 12px; font-weight: 700;
-        font-family: var(--font-mono);
-        letter-spacing: 0.1em;
-        cursor: pointer;
-        text-transform: uppercase;
-      ">OK</button>
+      <div style="font-size:12px;color:#6b9b6b;line-height:1.6;margin-bottom:6px"><code style="font-family:var(--font-mono);font-size:11px;padding:3px 7px;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.2);border-radius:4px;color:#ffbb33">${filename}</code></div>
+      <div style="font-size:11.5px;color:#6b9b6b;line-height:1.65;margin-bottom:18px">Only <b style="color:#d8ffd8">shortcuts</b> are functional. APK / EXE are reference lists.</div>
+      <button class="modal-close" style="padding:10px 22px;background:linear-gradient(135deg,#00ff66,#00d9ff);color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;font-family:var(--font-mono);letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;">OK</button>
     </div>
   `;
   document.body.appendChild(modal);
   modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
   modal.querySelector(".modal-close").addEventListener("click", () => modal.remove());
-  const escHandler = (e) => {
-    if (e.key === "Escape") { modal.remove(); document.removeEventListener("keydown", escHandler); }
-  };
-  document.addEventListener("keydown", escHandler);
 }
 
 /* SPLASH */
 window.addEventListener("load", () => {
-  setTimeout(() => {
-    document.getElementById("splash").classList.add("hide");
-  }, 1600);
+  setTimeout(() => { document.getElementById("splash").classList.add("hide"); }, 1600);
 });
 
 /* LAUNCH */
@@ -2153,12 +2343,8 @@ document.querySelectorAll(".launch-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const menu = btn.dataset.menu;
     if (menu === "termux") return;
-    document.querySelectorAll(".platform-tab").forEach(t => {
-      t.classList.toggle("active", t.dataset.tab === menu);
-    });
-    document.querySelectorAll(".tab-panel").forEach(p => {
-      p.classList.toggle("active", p.dataset.panel === menu);
-    });
+    document.querySelectorAll(".platform-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === menu));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === menu));
     document.body.dataset.mode = menu;
     document.querySelector(".details-section").scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -2169,12 +2355,35 @@ document.querySelectorAll(".platform-tab").forEach(tab => {
     document.querySelectorAll(".platform-tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     const target = tab.dataset.tab;
-    document.querySelectorAll(".tab-panel").forEach(p => {
-      p.classList.toggle("active", p.dataset.panel === target);
-    });
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === target));
     document.body.dataset.mode = target;
   });
 });
+
+/* STATS COUNT */
+(function initStats() {
+  let bypass = 0, icloud = 0, shortcuts = 0, tools = 0;
+  document.querySelectorAll('[href*="bypass"], .tool-badge.bypass').forEach(() => bypass++);
+  // simpler: manual count
+  bypass = 4;
+  icloud = 7;
+  shortcuts = SHORTCUTS.length;
+  tools = document.querySelectorAll(".tool-item").length;
+
+  function animNum(el, target, dur = 800) {
+    let start = 0, s = performance.now();
+    function step(t) {
+      const p = Math.min((t - s) / dur, 1);
+      el.textContent = Math.floor(start + (target - start) * p);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  animNum(document.getElementById("statBypass"), bypass);
+  animNum(document.getElementById("statIcloud"), icloud);
+  animNum(document.getElementById("statShortcuts"), shortcuts);
+  animNum(document.getElementById("statTools"), tools);
+})();
 
 /* ZOOM LOCK */
 document.addEventListener("gesturestart", e => e.preventDefault(), { passive: false });
@@ -2220,7 +2429,7 @@ function playTap(freq = 800, duration = 0.09, volume = 0.14) {
 }
 document.addEventListener("pointerdown", (e) => {
   unlockAudio();
-  playTap(e.target.closest("button, a, .tool-item, .shortcut-item, .platform-tab") ? 1000 : 700, 0.08, 0.12);
+  playTap(e.target.closest("button, a, .tool-item, .shortcut-item, .platform-tab, .lang-item") ? 1000 : 700, 0.08, 0.12);
 }, { passive: true });
 document.addEventListener("touchstart", unlockAudio, { passive: true, once: true });
 document.addEventListener("click", unlockAudio, { passive: true, once: true });
@@ -2253,13 +2462,7 @@ const termuxBody = document.getElementById("termuxBody");
 const termuxInput = document.getElementById("termuxInput");
 const termuxClose = document.getElementById("termuxClose");
 
-let txState = {
-  mode: "idle",
-  lastUrl: null,
-  lastStats: null,
-  history: [],
-  historyIndex: -1,
-};
+let txState = { mode: "idle", lastUrl: null, lastStats: null, history: [], historyIndex: -1 };
 
 function txLine(text, cls = "sys") {
   const el = document.createElement("div");
@@ -2267,26 +2470,20 @@ function txLine(text, cls = "sys") {
   el.innerHTML = text;
   termuxBody.appendChild(el);
   termuxBody.scrollTop = termuxBody.scrollHeight;
-  return el;
 }
-
 function txClear() { termuxBody.innerHTML = ""; }
-
 function txBanner() {
   txLine("  ╭──────────────────────────────────────────────╮", "info");
-  txLine("  │  <span class='key'>THANHDIEM TERMUX</span>  v2.0                      ", "info");
-  txLine("  │  multi-tool terminal · tiktok downloader     ", "info");
+  txLine("  │  <span class='key'>THANHDIEM TERMUX</span>  v2.1                      │", "info");
+  txLine("  │  bypass toolkit terminal · tiktok downloader │", "info");
   txLine("  ╰──────────────────────────────────────────────╯", "info");
   txLine("");
   txLine("  type <span class='key'>help</span> to see available commands", "sys");
-  txLine("  type <span class='key'>info</span> for system information", "sys");
   txLine("");
 }
-
 function txHelp() {
   txLine("");
   txLine("  ╭─ <span class='key'>COMMAND LIST</span> ────────────────────────", "info");
-  txLine("  │", "info");
   txLine("  │  <span class='key'>help</span>          show this command list", "sys");
   txLine("  │  <span class='key'>clear</span>         clear the screen", "sys");
   txLine("  │  <span class='key'>info</span>          system information", "sys");
@@ -2301,17 +2498,11 @@ function txHelp() {
   txLine("  │  <span class='key'>history</span>       show command history", "sys");
   txLine("  │", "info");
   txLine("  │  <span class='key'>tiktok</span>        tiktok video/audio downloader", "ok");
-  txLine("  │      → you will be asked for a URL", "sys");
-  txLine("  │      → then choose <span class='key'>video</span> or <span class='key'>audio</span>", "sys");
-  txLine("  │      → file downloads automatically", "sys");
-  txLine("  │", "info");
   txLine("  │  <span class='key'>cancel</span>        cancel current operation", "sys");
   txLine("  │  <span class='key'>exit</span>          close terminal", "sys");
-  txLine("  │", "info");
   txLine("  ╰──────────────────────────────────────────────", "info");
   txLine("");
 }
-
 async function txTiktokFetch(url) {
   const api = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
   const res = await fetch(api);
@@ -2319,7 +2510,6 @@ async function txTiktokFetch(url) {
   if (data.code !== 0) throw new Error(data.msg || "api error");
   return data.data;
 }
-
 function txNumber(n) {
   if (n == null) return "—";
   n = Number(n);
@@ -2328,292 +2518,163 @@ function txNumber(n) {
   if (n >= 1e3) return (n / 1e3).toFixed(2) + "K";
   return String(n);
 }
-
 function txFormatDate(ts) {
   if (!ts) return "—";
-  const d = new Date(ts * 1000);
-  return d.toLocaleString("en-US", { hour12: false });
+  return new Date(ts * 1000).toLocaleString("en-US", { hour12: false });
 }
-
 function txShowStats(d) {
-  const author = d.author || {};
-  const music = d.music_info || {};
+  const a = d.author || {}, m = d.music_info || {};
   txLine("");
   txLine("  ╭─ <span class='key'>VIDEO INFORMATION</span> ────────────────", "info");
-  txLine("  │", "info");
   txLine(`  │  <span class='key'>Title</span>: <span class='val'>${(d.title || "—").slice(0, 70)}</span>`, "sys");
   txLine(`  │  <span class='key'>ID</span>:    <span class='val'>${d.id || "—"}</span>`, "sys");
-  txLine("  │", "info");
   txLine("  │  ── <span class='key'>AUTHOR</span> ──", "sys");
-  txLine(`  │    <span class='key'>Name</span>:   <span class='val'>${author.nickname || "—"}</span>`, "sys");
-  txLine(`  │    <span class='key'>User</span>:   <span class='val'>@${author.unique_id || "—"}</span>`, "sys");
-  txLine(`  │    <span class='key'>ID</span>:     <span class='val'>${author.id || "—"}</span>`, "sys");
-  txLine("  │", "info");
+  txLine(`  │    <span class='key'>Name</span>:   <span class='val'>${a.nickname || "—"}</span>`, "sys");
+  txLine(`  │    <span class='key'>User</span>:   <span class='val'>@${a.unique_id || "—"}</span>`, "sys");
   txLine("  │  ── <span class='key'>STATS</span> ──", "sys");
   txLine(`  │    <span class='key'>View</span>:     <span class='val'>${txNumber(d.play_count)}</span>`, "ok");
   txLine(`  │    <span class='key'>Like</span>:     <span class='val'>${txNumber(d.digg_count)}</span>`, "ok");
   txLine(`  │    <span class='key'>Comment</span>:  <span class='val'>${txNumber(d.comment_count)}</span>`, "ok");
   txLine(`  │    <span class='key'>Share</span>:    <span class='val'>${txNumber(d.share_count)}</span>`, "ok");
   txLine(`  │    <span class='key'>Save</span>:     <span class='val'>${txNumber(d.collect_count)}</span>`, "ok");
-  txLine("  │", "info");
   txLine("  │  ── <span class='key'>TIME</span> ──", "sys");
   txLine(`  │    <span class='key'>Created</span>: <span class='val'>${txFormatDate(d.create_time)}</span>`, "sys");
-  txLine("  │", "info");
   txLine("  │  ── <span class='key'>MUSIC</span> ──", "sys");
-  txLine(`  │    <span class='key'>Title</span>:  <span class='val'>${(music.title || "—").slice(0, 50)}</span>`, "sys");
-  txLine(`  │    <span class='key'>Artist</span>: <span class='val'>${music.author || "—"}</span>`, "sys");
-  txLine("  │", "info");
+  txLine(`  │    <span class='key'>Title</span>:  <span class='val'>${(m.title || "—").slice(0, 50)}</span>`, "sys");
+  txLine(`  │    <span class='key'>Artist</span>: <span class='val'>${m.author || "—"}</span>`, "sys");
   txLine("  ╰──────────────────────────────────────────────", "info");
   txLine("");
 }
-
 async function txDownloadTiktok(url, mode) {
   txLine(`  <span class='warn'>⏳ fetching ${mode} url...</span>`, "warn");
   try {
     const d = await txTiktokFetch(url);
-    let downloadUrl = null;
-    let filename = `tiktok_${d.id || Date.now()}`;
-
-    if (mode === "video") {
-      downloadUrl = d.hdplay || d.play || d.wmplay;
-      filename += ".mp4";
-    } else if (mode === "audio") {
-      downloadUrl = d.music;
-      filename += ".mp3";
-    }
-
-    if (!downloadUrl) {
-      txLine("  ✗ could not get download url", "err");
-      return;
-    }
-
+    let dlUrl = null, filename = `tiktok_${d.id || Date.now()}`;
+    if (mode === "video") { dlUrl = d.hdplay || d.play || d.wmplay; filename += ".mp4"; }
+    else { dlUrl = d.music; filename += ".mp3"; }
+    if (!dlUrl) { txLine("  ✗ could not get download url", "err"); return; }
     txLine(`  <span class='warn'>⏳ downloading file...</span>`, "warn");
-
-    const res = await fetch(downloadUrl);
-    if (!res.ok) throw new Error("download failed " + res.status);
+    const res = await fetch(dlUrl);
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = blobUrl; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-
     txLine(`  <span class='ok'>✓ downloaded: ${filename}</span>`, "ok");
     txLine(`    <span class='sys'>size: ${(blob.size / 1024 / 1024).toFixed(2)} MB</span>`, "sys");
     txLine("");
   } catch (e) {
-    txLine(`  ✗ download error: ${e.message}`, "err");
-    txLine("");
+    txLine(`  ✗ download error: ${e.message}`, "err"); txLine("");
   }
 }
-
 async function txHandleInput(raw) {
   const input = raw.trim();
   if (!input) return;
-
   txLine(input, "user");
 
   if (txState.mode === "await_link") {
-    const url = input;
-    if (!/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(url)) {
-      txLine("  ✗ invalid url. must be a tiktok link.", "err");
-      txLine("    type <span class='key'>cancel</span> to abort", "sys");
-      return;
+    if (!/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(input)) {
+      txLine("  ✗ invalid url. must be a tiktok link.", "err"); return;
     }
-    txState.lastUrl = url;
+    txState.lastUrl = input;
     txLine("  ⏳ fetching video info...", "warn");
     try {
-      const d = await txTiktokFetch(url);
+      const d = await txTiktokFetch(input);
       txState.lastStats = d;
       txShowStats(d);
-
       txLine("  ╭─ <span class='key'>SELECT FORMAT</span> ───────────────────", "info");
       txLine("  │  type <span class='key'>video</span>  — download mp4 (no watermark)", "sys");
       txLine("  │  type <span class='key'>audio</span>  — download mp3", "sys");
       txLine("  │  type <span class='key'>cancel</span> — abort", "sys");
       txLine("  ╰──────────────────────────────────────────────", "info");
-      txLine("");
       txState.mode = "await_quality";
-    } catch (e) {
-      txLine(`  ✗ fetch error: ${e.message}`, "err");
-      txLine("");
-      txState.mode = "idle";
-    }
+    } catch (e) { txLine(`  ✗ fetch error: ${e.message}`, "err"); txState.mode = "idle"; }
     return;
   }
 
   if (txState.mode === "await_quality") {
-    if (input === "cancel") {
-      txLine("  ✓ cancelled.", "ok");
-      txState.mode = "idle";
-      return;
-    }
-    if (input !== "video" && input !== "audio") {
-      txLine("  ✗ only <span class='key'>video</span> or <span class='key'>audio</span> accepted", "err");
-      return;
-    }
+    if (input === "cancel") { txLine("  ✓ cancelled.", "ok"); txState.mode = "idle"; return; }
+    if (input !== "video" && input !== "audio") { txLine("  ✗ only video or audio", "err"); return; }
     txState.mode = "idle";
     await txDownloadTiktok(txState.lastUrl, input);
     return;
   }
 
   switch (input) {
-    case "help":
-    case "?":
-      txHelp();
-      break;
-
-    case "clear":
-    case "cls":
-      txClear();
-      txBanner();
-      break;
-
+    case "help": case "?": txHelp(); break;
+    case "clear": case "cls": txClear(); txBanner(); break;
     case "info":
       txLine("");
       txLine("  ╭─ <span class='key'>SYSTEM INFORMATION</span> ──────────────", "info");
-      txLine("  │", "info");
       txLine("  │  <span class='key'>Terminal</span>:  thanhdiem-termux", "sys");
-      txLine("  │  <span class='key'>Version</span>:   v2.0", "sys");
+      txLine("  │  <span class='key'>Version</span>:   v2.1", "sys");
       txLine("  │  <span class='key'>Host</span>:      thanhdiem-hub", "sys");
       txLine("  │  <span class='key'>User</span>:      thanhdiem", "sys");
       txLine("  │  <span class='key'>API</span>:       tikwm.com (public free)", "sys");
-      txLine("  │", "info");
-      txLine("  │  ── <span class='key'>FEATURES</span> ──", "sys");
-      txLine("  │    • fetch full tiktok info", "sys");
-      txLine("  │    • download mp4 (no watermark)", "sys");
-      txLine("  │    • download mp3 audio", "sys");
-      txLine("  │", "info");
-      txLine("  │  ── <span class='key'>AUTHOR</span> ──", "sys");
-      txLine("  │    <span class='key'>Name</span>:     Nguyen Thanh Diem", "ok");
-      txLine("  │    <span class='key'>Website</span>:  <a href='https://ngthanhdiem.github.io' target='_blank' rel='noopener'>https://ngthanhdiem.github.io</a>", "ok");
-      txLine("  │    <span class='key'>Telegram</span>: <a href='https://t.me/ThanhDiemX' target='_blank' rel='noopener'>@ThanhDiemX</a>", "ok");
-      txLine("  │", "info");
+      txLine("  │  <span class='key'>Author</span>:    Nguyen Thanh Diem", "ok");
+      txLine("  │  <span class='key'>Website</span>:   <a href='https://ngthanhdiem.github.io' target='_blank' rel='noopener'>https://ngthanhdiem.github.io</a>", "ok");
+      txLine("  │  <span class='key'>Telegram</span>:  <a href='https://t.me/ThanhDiemX' target='_blank' rel='noopener'>@ThanhDiemX</a>", "ok");
       txLine("  ╰──────────────────────────────────────────────", "info");
       txLine("");
       break;
-
     case "about":
       txLine("");
       txLine("  ╭─ <span class='key'>ABOUT</span> ──────────────────────────", "info");
-      txLine("  │", "info");
       txLine("  │  <span class='key'>Nguyen Thanh Diem</span>", "ok");
       txLine("  │  Developer / Tool Builder", "sys");
-      txLine("  │", "info");
       txLine("  │  <span class='key'>Website</span>:  <a href='https://ngthanhdiem.github.io' target='_blank' rel='noopener'>https://ngthanhdiem.github.io</a>", "ok");
       txLine("  │  <span class='key'>Telegram</span>: <a href='https://t.me/ThanhDiemX' target='_blank' rel='noopener'>@ThanhDiemX</a>", "ok");
-      txLine("  │", "info");
       txLine("  ╰──────────────────────────────────────────────", "info");
       txLine("");
       break;
-
     case "contact":
       txLine("");
       txLine("  ╭─ <span class='key'>CONTACT</span> ─────────────────────────", "info");
-      txLine("  │", "info");
       txLine("  │  <span class='key'>Telegram</span>: <a href='https://t.me/ThanhDiemX' target='_blank' rel='noopener'>@ThanhDiemX</a>", "ok");
       txLine("  │  <span class='key'>Website</span>:  <a href='https://ngthanhdiem.github.io' target='_blank' rel='noopener'>https://ngthanhdiem.github.io</a>", "ok");
-      txLine("  │  <span class='key'>Alt Web</span>:  <a href='https://thanhdiem.pages.dev' target='_blank' rel='noopener'>https://thanhdiem.pages.dev</a>", "ok");
-      txLine("  │", "info");
       txLine("  ╰──────────────────────────────────────────────", "info");
       txLine("");
       break;
-
-    case "version":
-    case "ver":
-      txLine("  thanhdiem-termux v2.0", "ok");
-      break;
-
-    case "whoami":
-      txLine("  thanhdiem", "ok");
-      break;
-
-    case "date":
-      txLine("  " + new Date().toString(), "sys");
-      break;
-
-    case "ls":
-      txLine("  bin/  dev/  etc/  home/  tmp/  usr/  var/", "sys");
-      break;
-
-    case "pwd":
-      txLine("  /home/thanhdiem", "sys");
-      break;
-
+    case "version": case "ver": txLine("  thanhdiem-termux v2.1", "ok"); break;
+    case "whoami": txLine("  thanhdiem", "ok"); break;
+    case "date": txLine("  " + new Date().toString(), "sys"); break;
+    case "ls": txLine("  bin/  dev/  etc/  home/  tmp/  usr/  var/", "sys"); break;
+    case "pwd": txLine("  /home/thanhdiem", "sys"); break;
     case "history":
-      if (txState.history.length === 0) {
-        txLine("  (no history)", "sys");
-      } else {
-        txState.history.forEach((h, i) => {
-          txLine(`  ${String(i + 1).padStart(3, " ")}  ${h}`, "sys");
-        });
-      }
+      if (txState.history.length === 0) txLine("  (no history)", "sys");
+      else txState.history.forEach((h, i) => txLine(`  ${String(i+1).padStart(3," ")}  ${h}`, "sys"));
       break;
-
     case "tiktok":
       txLine("");
       txLine("  🎬 <span class='key'>TIKTOK DOWNLOADER</span>", "info");
       txLine("  please paste the tiktok video url:", "sys");
-      txLine("  (paste url and press Enter)", "sys");
-      txLine("  (type <span class='key'>cancel</span> to abort)", "sys");
-      txLine("");
       txState.mode = "await_link";
       break;
-
-    case "cancel":
-      txLine("  ✓ nothing to cancel.", "ok");
-      break;
-
-    case "exit":
-    case "quit":
-    case "q":
-      closeTermux();
-      break;
-
+    case "cancel": txLine("  ✓ nothing to cancel.", "ok"); break;
+    case "exit": case "quit": case "q": closeTermux(); break;
     default:
-      if (input.startsWith("echo ")) {
-        txLine("  " + input.slice(5), "sys");
-      } else if (input.startsWith("help ")) {
-        txLine(`  no help for '${input.slice(5)}'`, "err");
-      } else {
-        txLine(`  command not found: ${input}`, "err");
-        txLine("  type <span class='key'>help</span> for command list", "sys");
-      }
+      if (input.startsWith("echo ")) txLine("  " + input.slice(5), "sys");
+      else { txLine(`  command not found: ${input}`, "err"); txLine("  type <span class='key'>help</span> for command list", "sys"); }
   }
 }
-
 const _origHandle = txHandleInput;
 txHandleInput = async function(raw) {
   const t = raw.trim();
-  if (t) {
-    txState.history.push(t);
-    txState.historyIndex = -1;
-  }
+  if (t) { txState.history.push(t); txState.historyIndex = -1; }
   return _origHandle(raw);
 };
-
 function openTermux() {
   termuxWindow.classList.add("show");
-  if (termuxBody.children.length === 0) {
-    txBanner();
-  }
+  if (termuxBody.children.length === 0) txBanner();
   setTimeout(() => termuxInput.focus(), 300);
 }
-
 function closeTermux() {
   termuxWindow.classList.remove("show");
   termuxInput.blur();
 }
-
 termuxClose.addEventListener("click", closeTermux);
-termuxWindow.addEventListener("click", (e) => {
-  if (e.target === termuxWindow) closeTermux();
-});
-
+termuxWindow.addEventListener("click", (e) => { if (e.target === termuxWindow) closeTermux(); });
 termuxInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     const v = termuxInput.value;
@@ -2630,16 +2691,11 @@ termuxInput.addEventListener("keydown", (e) => {
     e.preventDefault();
     if (txState.history.length && txState.historyIndex >= 0) {
       txState.historyIndex++;
-      if (txState.historyIndex >= txState.history.length) {
-        txState.historyIndex = -1;
-        termuxInput.value = "";
-      } else {
-        termuxInput.value = txState.history[txState.historyIndex] || "";
-      }
+      if (txState.historyIndex >= txState.history.length) { txState.historyIndex = -1; termuxInput.value = ""; }
+      else termuxInput.value = txState.history[txState.historyIndex] || "";
     }
   }
 });
-
 document.getElementById("btnTermuxLaunch").addEventListener("click", openTermux);
 </script>
 </body>
